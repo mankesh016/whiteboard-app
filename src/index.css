@@ -1,13 +1,66 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* font family Caveat, Indie Flower, Architects Daughter */
+@import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400..700&family=Indie+Flower&display=swap");
+
+/* Toolbar Styles */
+.toolbar-container {
+  @apply absolute left-1/2 -translate-x-1/2 top-5 flex justify-center px-3 py-2 w-fit bg-gray-100 border rounded-lg border-gray-400;
+  box-shadow: 0px 0px 10px rgb(200, 200, 200);
+}
+.toolbarItem {
+  @apply p-2 m-1 cursor-pointer flex justify-center items-center;
+}
+.toolbarItem:hover {
+  @apply bg-blue-50;
+}
+.toolbarItem.active {
+  @apply bg-blue-100;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Toolbox container */
+.toolbox-container {
+  @apply absolute top-1/2 -translate-y-1/2 left-5 flex-col justify-center px-3 py-2 w-fit h-fit bg-gray-100 border rounded-lg border-gray-400;
+  box-shadow: 0px 0px 10px rgb(200, 200, 200);
+}
+.heading {
+  @apply font-thin text-gray-700;
+}
+.item-container {
+  @apply my-2 flex justify-start items-center;
+}
+.color-preview {
+  @apply w-7 h-7 mr-3 last:mr-0 rounded-sm flex justify-center items-center border;
+  transition: all 0.2s ease-in-out;
+}
+.color-picker {
+  @apply w-6 h-6 mr-2 last:mr-0 cursor-pointer rounded-xl flex justify-center items-center;
+  transition: all 0.2s ease-in-out;
+}
+.box-picker {
+  @apply bg-blue-100 w-7 h-7 px-1 py-0 mr-2 last:mr-0 cursor-pointer rounded-md max-h-[80vh] flex justify-center items-center;
+}
+.color-picker:hover {
+  transform: scale(1.05);
+}
+.box-picker:hover {
+  @apply bg-blue-200;
+}
+.color-picker.active {
+  @apply border border-white outline outline-1 outline-black;
+  transform: scale(1.05);
+}
+.box-picker.active {
+  @apply bg-blue-300;
+}
+
+/* Board Styles */
+.undo-container {
+  @apply absolute left-5 bottom-5 flex justify-center w-fit bg-gray-200 border rounded-md border-gray-400;
+  box-shadow: 0px 0px 5px rgb(230, 230, 230);
+}
+.undoItem {
+  @apply p-2 cursor-pointer flex justify-center items-center;
+}
+.undoItem.disabled {
+  @apply opacity-30 cursor-not-allowed;
+  pointer-events: none;
 }

@@ -1,0 +1,182 @@
+import { COLORS } from "../constants";
+import {
+  CrossHatchFillIcon,
+  DotsFillIcon,
+  EmptyFillIcon,
+  HachureFillIcon,
+  SolidFillIcon,
+} from "../icons/fillStyleIcon";
+import { StrokeIcon } from "../icons/strokeIcon";
+import { LineStyleIcon } from "../icons/roughnessIcon";
+import { GapIcon } from "../icons/gapIcon";
+import { useContext } from "react";
+import ToolboxContext from "../store/toolbox-context";
+import classNames from "classnames";
+
+const TOOLBOX_SECTIONS = {
+  strokeColors: [
+    { label: "BLACK", value: COLORS.STROKE_BLACK },
+    { label: "BLUE", value: COLORS.STROKE_BLUE },
+    { label: "RED", value: COLORS.STROKE_RED },
+    { label: "GREEN", value: COLORS.STROKE_GREEN },
+  ],
+  fillColors: [
+    { label: "SKYBLUE", value: COLORS.SKYBLUE },
+    { label: "YELLOW", value: COLORS.YELLOW },
+    { label: "PINK", value: COLORS.PINK },
+    { label: "GREEN", value: COLORS.GREEN },
+  ],
+  fillStyles: [
+    { id: "empty", icon: <EmptyFillIcon />, value: "none" },
+    { id: "dots", icon: <DotsFillIcon />, value: "dots" },
+    { id: "cross-hatch", icon: <CrossHatchFillIcon />, value: "cross-hatch" },
+    { id: "hachure", icon: <HachureFillIcon />, value: "hachure" },
+    { id: "solid", icon: <SolidFillIcon />, value: "solid" },
+  ],
+  strokeWidths: [
+    { id: "small", icon: <StrokeIcon strokeWidth={1} />, value: 1 },
+    { id: "medium", icon: <StrokeIcon strokeWidth={2} />, value: 2 },
+    { id: "large", icon: <StrokeIcon strokeWidth={3} />, value: 3 },
+    { id: "xl", icon: <StrokeIcon strokeWidth={4} />, value: 4 },
+    { id: "xxl", icon: <StrokeIcon strokeWidth={5} />, value: 5 },
+  ],
+  roughnessOptions: [
+    { id: "rough-0", icon: <LineStyleIcon roughness={0} />, value: 0 },
+    { id: "rough-1", icon: <LineStyleIcon roughness={1} />, value: 1 },
+    { id: "rough-2", icon: <LineStyleIcon roughness={2} />, value: 2 },
+    { id: "rough-3", icon: <LineStyleIcon roughness={3} />, value: 3 },
+  ],
+  gapOptions: [
+    { id: "gap-1", icon: <GapIcon gap={3} />, value: 15 },
+    { id: "gap-2", icon: <GapIcon gap={4} />, value: 25 },
+    { id: "gap-3", icon: <GapIcon gap={5} />, value: 35 },
+    { id: "gap-4", icon: <GapIcon gap={7} />, value: 45 },
+  ],
+};
+
+const ColorPickerSection = ({ title, presets, colorValue, onSelect }) => {
+  const isCustom = colorValue && !presets.some((p) => p.value === colorValue);
+  return (
+    <>
+      <div className="heading">{title}</div>
+      <div className="item-container">
+        <div
+          className="color-preview"
+          style={{
+            background: colorValue,
+          }}
+        ></div>
+
+        {presets.map((color) => (
+          <div
+            key={color.label}
+            className={classNames("color-picker", {
+              active: colorValue === color.value,
+            })}
+            onClick={() => onSelect(color.value)}
+            style={{ background: color.value }}
+          />
+        ))}
+
+        <div
+          className={classNames("color-picker", {
+            active: isCustom,
+          })}
+          style={{
+            opacity: 0.8,
+            background:
+              "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)",
+          }}
+        >
+          <input
+            type="color"
+            style={{ opacity: 0 }}
+            onChange={(e) => onSelect(e.target.value)}
+            value={colorValue}
+          />
+        </div>
+      </div>
+    </>
+  );
+};
+
+const BoxPickerSection = ({ title, items, currentValue, onSelect }) => (
+  <>
+    <div className="heading">{title}</div>
+    <div className="item-container">
+      {items.map((item) => (
+        <div
+          key={item.id}
+          className={classNames("box-picker", {
+            active: currentValue === item.value,
+          })}
+          onClick={() => onSelect(item.value)}
+        >
+          {item.icon}
+        </div>
+      ))}
+    </div>
+  </>
+);
+
+function Toolbox() {
+  const {
+    toolboxState,
+    changeStroke,
+    changeFill,
+    changeFillStyle,
+    changeStrokeWidth,
+    changeRoughness,
+    changeGap,
+  } = useContext(ToolboxContext);
+
+  return (
+    <>
+      <div className={"toolbox-container max-h-[70vh] overflow-auto "}>
+        {/* Color Sections */}
+
+        <ColorPickerSection
+          title="Stroke"
+          presets={TOOLBOX_SECTIONS.strokeColors}
+          colorValue={toolboxState.stroke}
+          onSelect={changeStroke}
+        />
+        <ColorPickerSection
+          title="Fill"
+          presets={TOOLBOX_SECTIONS.fillColors}
+          colorValue={toolboxState.fill}
+          onSelect={changeFill}
+        />
+
+        {/* Box Sections */}
+        <BoxPickerSection
+          title="Fill Style"
+          items={TOOLBOX_SECTIONS.fillStyles}
+          currentValue={toolboxState.fillStyle}
+          onSelect={changeFillStyle}
+        />
+
+        <BoxPickerSection
+          title="Stroke Width"
+          items={TOOLBOX_SECTIONS.strokeWidths}
+          currentValue={toolboxState.strokeWidth}
+          onSelect={changeStrokeWidth}
+        />
+        <BoxPickerSection
+          title="Roughness"
+          items={TOOLBOX_SECTIONS.roughnessOptions}
+          currentValue={toolboxState.roughness}
+          onSelect={changeRoughness}
+        />
+        <BoxPickerSection
+          title="Fill Gap"
+          items={TOOLBOX_SECTIONS.gapOptions}
+          currentValue={toolboxState.hachureGap}
+          onSelect={changeGap}
+        />
+      </div>
+    </>
+  );
+}
+
+export default Toolbox;
