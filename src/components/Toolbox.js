@@ -217,7 +217,7 @@ function Toolbox() {
         )}
 
         {/* Fill Gap */}
-        {showFill && (
+        {showGap && (
           <BoxPickerSection
             title="Fill Gap"
             items={TOOLBOX_SECTIONS.gapOptions}
