@@ -1,4 +1,4 @@
-import { COLORS } from "../constants";
+import { COLORS, TOOL_ITEMS } from "../constants";
 import {
   CrossHatchFillIcon,
   DotsFillIcon,
@@ -11,6 +11,7 @@ import { LineStyleIcon } from "../icons/roughnessIcon";
 import { GapIcon } from "../icons/gapIcon";
 import { useContext } from "react";
 import ToolboxContext from "../store/toolbox-context";
+import BoardContext from "../store/board-context";
 import classNames from "classnames";
 
 const TOOLBOX_SECTIONS = {
@@ -120,6 +121,7 @@ const BoxPickerSection = ({ title, items, currentValue, onSelect }) => (
 );
 
 function Toolbox() {
+  const { activeToolItem } = useContext(BoardContext);
   const {
     toolboxState,
     changeStroke,
@@ -130,50 +132,99 @@ function Toolbox() {
     changeGap,
   } = useContext(ToolboxContext);
 
+  if (activeToolItem === TOOL_ITEMS.ERASER) {
+    return null;
+  }
+
+  const isShape =
+    activeToolItem === TOOL_ITEMS.RECTANGLE ||
+    activeToolItem === TOOL_ITEMS.CIRCLE;
+  const isLineOrArrow =
+    activeToolItem === TOOL_ITEMS.LINE || activeToolItem === TOOL_ITEMS.ARROW;
+  const isBrush = activeToolItem === TOOL_ITEMS.BRUSH;
+  const isText = activeToolItem === TOOL_ITEMS.TEXT;
+
+  let strokeTitle = "Stroke";
+  let strokeWidthTitle = "Stroke Width";
+
+  if (isBrush) {
+    strokeTitle = "Brush Color";
+    strokeWidthTitle = "Brush Size";
+  } else if (isText) {
+    strokeTitle = "Text Color";
+    strokeWidthTitle = "Font Size";
+  }
+
+  const showFill = isShape;
+  const showFillStyle = isShape;
+  const showRoughness = isShape || isLineOrArrow;
+  const showGap =
+    isShape &&
+    toolboxState.fillStyle !== "none" &&
+    toolboxState.fillStyle !== "solid";
+
   return (
     <>
       <div className={"toolbox-container max-h-[70vh] overflow-auto "}>
         {/* Color Sections */}
 
+        {/* Stroke Color */}
         <ColorPickerSection
-          title="Stroke"
+          title={strokeTitle}
           presets={TOOLBOX_SECTIONS.strokeColors}
           colorValue={toolboxState.stroke}
           onSelect={changeStroke}
         />
-        <ColorPickerSection
-          title="Fill"
-          presets={TOOLBOX_SECTIONS.fillColors}
-          colorValue={toolboxState.fill}
-          onSelect={changeFill}
-        />
+
+        {/* Fill Color */}
+        {showFill && (
+          <ColorPickerSection
+            title="Fill"
+            presets={TOOLBOX_SECTIONS.fillColors}
+            colorValue={toolboxState.fill}
+            onSelect={changeFill}
+          />
+        )}
 
         {/* Box Sections */}
-        <BoxPickerSection
-          title="Fill Style"
-          items={TOOLBOX_SECTIONS.fillStyles}
-          currentValue={toolboxState.fillStyle}
-          onSelect={changeFillStyle}
-        />
 
+        {/* Fill Style */}
+        {showFillStyle && (
+          <BoxPickerSection
+            title="Fill Style"
+            items={TOOLBOX_SECTIONS.fillStyles}
+            currentValue={toolboxState.fillStyle}
+            onSelect={changeFillStyle}
+          />
+        )}
+
+        {/* Stroke Width */}
         <BoxPickerSection
-          title="Stroke Width"
+          title={strokeWidthTitle}
           items={TOOLBOX_SECTIONS.strokeWidths}
           currentValue={toolboxState.strokeWidth}
           onSelect={changeStrokeWidth}
         />
-        <BoxPickerSection
-          title="Roughness"
-          items={TOOLBOX_SECTIONS.roughnessOptions}
-          currentValue={toolboxState.roughness}
-          onSelect={changeRoughness}
-        />
-        <BoxPickerSection
-          title="Fill Gap"
-          items={TOOLBOX_SECTIONS.gapOptions}
-          currentValue={toolboxState.hachureGap}
-          onSelect={changeGap}
-        />
+
+        {/* Roughness */}
+        {showRoughness && (
+          <BoxPickerSection
+            title="Roughness"
+            items={TOOLBOX_SECTIONS.roughnessOptions}
+            currentValue={toolboxState.roughness}
+            onSelect={changeRoughness}
+          />
+        )}
+
+        {/* Fill Gap */}
+        {showFill && (
+          <BoxPickerSection
+            title="Fill Gap"
+            items={TOOLBOX_SECTIONS.gapOptions}
+            currentValue={toolboxState.hachureGap}
+            onSelect={changeGap}
+          />
+        )}
       </div>
     </>
   );
