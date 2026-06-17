@@ -1,70 +1,115 @@
-# Getting Started with Create React App
+# 🖊️ Whiteboard App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A feature-rich, interactive whiteboard application built with **React.js** and **Tailwind CSS** — draw shapes, sketch freehand, and export your work, all in the browser.
 
-## Available Scripts
+🔗 **Live Demo:** [whiteboard-app-henna.vercel.app](https://whiteboard-app-henna.vercel.app)
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## ✨ Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- 🎨 **Freehand Drawing** — Smooth, canvas-based sketching experience
+- 📐 **Shape Tools** — Draw with precision using geometric shape support
+- ↩️ **Undo / Redo** — Stack-based history system for reliable multi-step undo and redo
+- 🖌️ **Toolbox Controls** — Customize stroke style, fill style, gap, and roughness per element
+- 💾 **Export** — Save your whiteboard as an image file via the export utility
+- ⚡ **Context API State Management** — Decoupled board and toolbox state via React Context + Providers
+- 📱 **Responsive UI** — Clean layout that adapts across screen sizes
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 🛠️ Tech Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| Technology        | Purpose                        |
+| ----------------- | ------------------------------ |
+| React.js          | UI framework & component logic |
+| Tailwind CSS      | Utility-first styling          |
+| HTML5 Canvas      | Drawing surface                |
+| React Context API | Global state management        |
+| Vercel            | Deployment & hosting           |
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🚀 Getting Started
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Prerequisites
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Node.js (v16 or above)
+- npm
 
-### `npm run eject`
+### Installation
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+# Clone the repository
+git clone https://github.com/mankesh016/whiteboard-app.git
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# Navigate to the project folder
+cd whiteboard-app
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+# Install dependencies
+npm install
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Running Locally
 
-## Learn More
+```bash
+npm start
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Building for Production
 
-### Code Splitting
+```bash
+npm run build
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+The optimized production build will be in the `build/` folder.
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 📁 Project Structure
 
-### Making a Progressive Web App
+```
+whiteboard-app/
+├── public/
+└── src/
+    ├── components/
+    │   ├── Board.js          # Main canvas drawing surface
+    │   ├── Toolbar.js        # Top toolbar (tools & actions)
+    │   └── Toolbox.js        # Style controls panel
+    ├── hooks/
+    │   └── useHistory.js     # Stack-based undo/redo hook
+    ├── icons/
+    ├── store/
+    │   ├── board-context.js       # Board state context
+    │   ├── BoardProvider.js       # Board context provider
+    │   ├── toolbox-context.js     # Toolbox state context
+    │   └── ToolboxProvider.js     # Toolbox context provider
+    ├── utils/
+    │   ├── element.js        # Element creation & rendering helpers
+    │   ├── export.js         # Canvas export logic
+    │   ├── geometry.js       # Hit detection & geometric helpers
+    │   └── math.js           # Math utility functions
+    ├── App.js
+    └── constants.js          # App-wide constants
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
 
-### Advanced Configuration
+## 🧠 Architecture Highlights
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+**Undo / Redo via `useHistory`**
+History is managed as a stack inside a custom hook. Each draw action pushes a snapshot onto the stack; undo pops it, and redo re-applies it — giving O(1) state transitions without prop drilling.
 
-### Deployment
+**Decoupled State with Context API**
+Board state (elements, history) and Toolbox state (stroke, fill, roughness, gap) are managed in separate contexts and providers, keeping concerns cleanly separated.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+**Geometry & Math Utils**
+Hit detection, element bounds, and drawing math are abstracted into `geometry.js` and `math.js`, keeping component code readable and the logic independently testable.
 
-### `npm run build` fails to minify
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 🌐 Deployment
+
+Deployed on **Vercel** with automatic deployments on every push to `main`.

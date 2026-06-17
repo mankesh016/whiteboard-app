@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Whiteboard App",
+  "name": "Draw, type, and sketch on a clean, distraction-free canvas.",
   "icons": [
     {
       "src": "favicon.ico",
