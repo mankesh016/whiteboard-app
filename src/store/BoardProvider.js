@@ -1,6 +1,6 @@
 import { useReducer } from "react";
 import BoardContext from "./board-context";
-import { BOARD_ACTIONS, TOOL_ITEMS } from "../constants";
+import { BOARD_ACTIONS, INTIIAL_TOOLBAR_ITEM } from "../constants";
 
 const boardReducer = (state, action) => {
   switch (action.type) {
@@ -16,7 +16,7 @@ const boardReducer = (state, action) => {
 };
 
 const initialBoardState = {
-  activeToolItem: TOOL_ITEMS.LINE,
+  activeToolItem: INTIIAL_TOOLBAR_ITEM,
   toolClickHandler: () => {},
 };
 

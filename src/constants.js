@@ -43,6 +43,7 @@ export const COLORS = {
 export const TOOLBOX_ACTIONS = {
   CHANGE_STROKE: "CHANGE_STROKE",
   CHANGE_FILL: "CHANGE_FILL",
+  CHANGE_FILL_OPACITY: "CHANGE_FILL_OPACITY",
   CHANGE_FILL_STYLE: "CHANGE_FILL_STYLE",
   CHANGE_STROKE_WIDTH: "CHANGE_STROKE_WIDTH",
   CHANGE_ROUGHNESS: "CHANGE_ROUGHNESS",
@@ -52,12 +53,15 @@ export const TOOLBOX_ACTIONS = {
 export const INITIAL_TOOLBOX_STATE = {
   stroke: COLORS.STROKE_BLACK,
   fill: "transparent", // transparent
+  fillOpacity: 60,
   fillStyle: "solid", // none dots cross-hatch hachure solid
   strokeWidth: 2, // 1 2 3 4 5
   roughness: 1, // 0 1 2 3
   fillWeight: 3, // fixed
   hachureGap: 25, // 15 25 35 45
 };
+
+export const INTIIAL_TOOLBAR_ITEM = TOOL_ITEMS.BRUSH;
 
 export const FONT_FAMILIES = {
   HANDWRITING: "Caveat, cursive",

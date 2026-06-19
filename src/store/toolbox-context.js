@@ -6,6 +6,7 @@ const ToolboxContext = createContext({
   changeStroke: () => {},
   changeBackground: () => {},
   changeFill: () => {},
+  changeFillOpacity: () => {},
   changeFillStyle: () => {},
   changeStrokeWidth: () => {},
   changeRoughness: () => {},

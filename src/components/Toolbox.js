@@ -138,6 +138,7 @@ function Toolbox() {
     toolboxState,
     changeStroke,
     changeFill,
+    changeFillOpacity,
     changeFillStyle,
     changeStrokeWidth,
     changeRoughness,
@@ -236,6 +237,35 @@ function Toolbox() {
             currentValue={toolboxState.hachureGap}
             onSelect={changeGap}
           />
+        )}
+
+        {/* Fill Opacity Slider */}
+        {showFill && toolboxState.fill !== "transparent" && (
+          <div className="my-2">
+            <div className="heading flex justify-between items-center text-sm">
+              <div>Opacity</div>
+              <div className="font-semibold text-xs text-gray-600">
+                {toolboxState.fillOpacity !== undefined
+                  ? toolboxState.fillOpacity
+                  : 60}
+                %
+              </div>
+            </div>
+            <div className="flex items-center my-1">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={
+                  toolboxState.fillOpacity !== undefined
+                    ? toolboxState.fillOpacity
+                    : 60
+                }
+                onChange={(e) => changeFillOpacity(Number(e.target.value))}
+                className="w-full cursor-pointer accent-blue-600"
+              />
+            </div>
+          </div>
         )}
       </div>
     </>

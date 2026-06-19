@@ -1,6 +1,33 @@
 import { TOOL_ITEMS } from "../constants";
 import { getArrowHeadsCoordinates } from "./math";
 
+export const getRgbaColor = (color, opacity) => {
+  if (!color || color === "transparent") return "transparent";
+  if (color.startsWith("#")) {
+    const hex = color.replace("#", "");
+    let r, g, b;
+    if (hex.length === 3) {
+      r = parseInt(hex[0] + hex[0], 16);
+      g = parseInt(hex[1] + hex[1], 16);
+      b = parseInt(hex[2] + hex[2], 16);
+    } else if (hex.length === 6) {
+      r = parseInt(hex.slice(0, 2), 16);
+      g = parseInt(hex.slice(2, 4), 16);
+      b = parseInt(hex.slice(4, 6), 16);
+    } else {
+      return color;
+    }
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  if (color.startsWith("rgba")) {
+    const parts = color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([0-9.]+)\)/);
+    if (parts) {
+      return `rgba(${parts[1]}, ${parts[2]}, ${parts[3]}, ${opacity})`;
+    }
+  }
+  return color;
+};
+
 export const generateElement = (id, x1, y1, x2, y2, type, options, gen) => {
   const newElement = {
     id,
@@ -12,6 +39,12 @@ export const generateElement = (id, x1, y1, x2, y2, type, options, gen) => {
     options,
   };
   options.seed = id + 1;
+
+  if (options.fill !== "transparent") {
+    const opacity =
+      options.fillOpacity !== undefined ? options.fillOpacity : 60;
+    options.fill = getRgbaColor(options.fill, opacity / 100);
+  }
 
   switch (type) {
     case TOOL_ITEMS.LINE: {

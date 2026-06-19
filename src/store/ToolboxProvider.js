@@ -24,6 +24,12 @@ const reducer = (state, action) => {
         [tool]: { ...currentToolState, fill: value },
       };
     }
+    case TOOLBOX_ACTIONS.CHANGE_FILL_OPACITY: {
+      return {
+        ...state,
+        [tool]: { ...currentToolState, fillOpacity: value },
+      };
+    }
     case TOOLBOX_ACTIONS.CHANGE_FILL_STYLE: {
       return {
         ...state,
@@ -85,6 +91,12 @@ const ToolboxProvider = ({ children }) => {
       payload: { tool: activeToolItem, value: color },
     });
   };
+  const changeFillOpacity = (opacity) => {
+    dispatchToolboxAction({
+      type: TOOLBOX_ACTIONS.CHANGE_FILL_OPACITY,
+      payload: { tool: activeToolItem, value: opacity },
+    });
+  };
   const changeFillStyle = (fillStyle) => {
     if (fillStyle === "none") {
       dispatchToolboxAction({
@@ -122,6 +134,7 @@ const ToolboxProvider = ({ children }) => {
         toolboxState,
         changeStroke,
         changeFill,
+        changeFillOpacity,
         changeFillStyle,
         changeStrokeWidth,
         changeRoughness,

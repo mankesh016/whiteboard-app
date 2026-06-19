@@ -120,6 +120,7 @@ function Board() {
     const options = {
       stroke: toolboxState.stroke,
       fill: toolboxState.fill,
+      fillOpacity: toolboxState.fillOpacity,
       fillStyle: toolboxState.fillStyle,
       fillWeight: toolboxState.fillWeight,
       hachureGap: toolboxState.hachureGap,
