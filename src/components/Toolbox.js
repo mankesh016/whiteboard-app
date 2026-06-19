@@ -2,7 +2,6 @@ import { COLORS, TOOL_ITEMS } from "../constants";
 import {
   CrossHatchFillIcon,
   DotsFillIcon,
-  EmptyFillIcon,
   HachureFillIcon,
   SolidFillIcon,
 } from "../icons/fillStyleIcon";
@@ -24,11 +23,10 @@ const TOOLBOX_SECTIONS = {
   fillColors: [
     { label: "SKYBLUE", value: COLORS.SKYBLUE },
     { label: "YELLOW", value: COLORS.YELLOW },
-    { label: "PINK", value: COLORS.PINK },
     { label: "GREEN", value: COLORS.GREEN },
+    { label: "TRANSPARENT", value: "transparent" },
   ],
   fillStyles: [
-    { id: "empty", icon: <EmptyFillIcon />, value: "none" },
     { id: "dots", icon: <DotsFillIcon />, value: "dots" },
     { id: "cross-hatch", icon: <CrossHatchFillIcon />, value: "cross-hatch" },
     { id: "hachure", icon: <HachureFillIcon />, value: "hachure" },
@@ -63,9 +61,15 @@ const ColorPickerSection = ({ title, presets, colorValue, onSelect }) => {
       <div className="item-container">
         <div
           className="color-preview"
-          style={{
-            background: colorValue,
-          }}
+          style={
+            colorValue === "transparent"
+              ? {
+                  background:
+                    "repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%)",
+                  backgroundSize: "6px 6px",
+                }
+              : { background: colorValue }
+          }
         ></div>
 
         {presets.map((color) => (
@@ -75,7 +79,15 @@ const ColorPickerSection = ({ title, presets, colorValue, onSelect }) => {
               active: colorValue === color.value,
             })}
             onClick={() => onSelect(color.value)}
-            style={{ background: color.value }}
+            style={
+              color.value === "transparent"
+                ? {
+                    background:
+                      "repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%)",
+                    backgroundSize: "6px 6px",
+                  }
+                : { background: color.value }
+            }
           />
         ))}
 
@@ -156,7 +168,7 @@ function Toolbox() {
   }
 
   const showFill = isShape;
-  const showFillStyle = isShape;
+  const showFillStyle = isShape && toolboxState.fill !== "transparent";
   const showRoughness = isShape || isLineOrArrow;
   const showGap =
     isShape &&

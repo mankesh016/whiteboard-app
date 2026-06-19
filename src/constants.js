@@ -51,7 +51,7 @@ export const TOOLBOX_ACTIONS = {
 
 export const INITIAL_TOOLBOX_STATE = {
   stroke: COLORS.STROKE_BLACK,
-  fill: COLORS.SKYBLUE,
+  fill: "transparent", // transparent
   fillStyle: "solid", // none dots cross-hatch hachure solid
   strokeWidth: 2, // 1 2 3 4 5
   roughness: 1, // 0 1 2 3
