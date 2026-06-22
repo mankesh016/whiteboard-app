@@ -25,8 +25,11 @@ import {
 import { useHistory } from "../hooks/useHistory";
 import { downloadCanvasDrawing } from "../utils/export";
 import { LuRedo, LuUndo } from "react-icons/lu";
+import WelcomeModal from "./WelcomeModal";
 import classNames from "classnames";
 import { getFontSize } from "../utils/math";
+import ThemeSelector from "./ThemeSelector";
+import DarkModeToggle from "./DarkModeToggle";
 
 const getResizedElementDetails = (
   clientX,
@@ -151,6 +154,27 @@ const getResizedElementDetails = (
   return { x1: resX1, y1: resY1, x2: resX2, y2: resY2 };
 };
 
+const getThemedColor = (color, isDarkMode) => {
+  if (!color || color === "transparent") return color;
+
+  const lower = color.toLowerCase();
+  const isBlack =
+    lower === "#000" ||
+    lower === "#000000" ||
+    lower === "#212529" ||
+    lower === "currentcolor";
+  const isWhite = lower === "#fff" || lower === "#ffffff";
+
+  if (isDarkMode) {
+    if (isBlack) return "#ffffff";
+    if (isWhite) return "#212529";
+  } else {
+    if (isBlack) return "#212529";
+    if (isWhite) return "#ffffff";
+  }
+  return color;
+};
+
 function Board() {
   const { toolboxState } = useContext(ToolboxContext);
   const { activeToolItem } = useContext(BoardContext);
@@ -162,7 +186,18 @@ function Board() {
   const [selectedElement, setSelectedElement] = useState(null);
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [resizeHandle, setResizeHandle] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(
+    localStorage.getItem("whiteboard-dark-mode") === "true",
+  );
   const hasMovedRef = useRef(false);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add("dark-mode");
+    } else {
+      document.body.classList.remove("dark-mode");
+    }
+  }, [isDarkMode]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -209,6 +244,8 @@ function Board() {
 
     context.clearRect(0, 0, canvas.width, canvas.height);
     elements.forEach((el) => {
+      const strokeColor = getThemedColor(el.options.stroke, isDarkMode);
+
       if (el.type === TOOL_ITEMS.BRUSH) {
         const stroke = getStroke(el.points, {
           size: el.options.strokeWidth * BRUSH_STROKE_MULTIPLYER,
@@ -218,15 +255,29 @@ function Board() {
         });
         const pathData = getSvgPathFromStroke(stroke);
         const myPath = new Path2D(pathData);
-        context.fillStyle = el.options.stroke;
+        context.fillStyle = strokeColor;
         context.fill(myPath);
       } else if (el.type === TOOL_ITEMS.TEXT) {
         context.textBaseline = "top";
         context.font = `${getFontSize(el.options.strokeWidth)}px ${FONT_FAMILIES.HANDWRITING}`;
-        context.fillStyle = el.options.stroke;
+        context.fillStyle = strokeColor;
         context.fillText(el.text, el.x1, el.y1 + 3);
       } else {
-        roughCanvas.draw(el.roughEle);
+        const themedOptions = {
+          ...el.options,
+          stroke: strokeColor,
+        };
+        const tempElement = generateElement(
+          el.id,
+          el.x1,
+          el.y1,
+          el.x2,
+          el.y2,
+          el.type,
+          themedOptions,
+          roughCanvas.generator,
+        );
+        roughCanvas.draw(tempElement.roughEle);
       }
     });
 
@@ -286,7 +337,7 @@ function Board() {
         }
       }
     }
-  }, [elements, selectedElementId]);
+  }, [elements, selectedElementId, isDarkMode]);
 
   const handleMouseDown = (event) => {
     const { clientX, clientY } = event;
@@ -670,6 +721,10 @@ function Board() {
           <LuRedo />
         </div>
       </div>
+
+      <WelcomeModal />
+      <ThemeSelector />
+      <DarkModeToggle isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
     </>
   );
 }
