@@ -1,37 +1,88 @@
 /* font family Caveat, Indie Flower, Architects Daughter, Outfit */
 @import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400..700&family=Indie+Flower&family=Outfit:wght@300..600&display=swap");
 
+/* Theme Definitions */
+body.theme-yellowish {
+  --app-bg: #faf6eb;
+  --text-color: #3a3222;
+  --card-bg: #fdfaf3;
+  --border-color: #d3c5ab;
+  --menu-hover-bg: #f3edd8;
+}
+
+body.theme-lavender {
+  --app-bg: #f2edf7;
+  --text-color: #352a40;
+  --card-bg: #faf8fd;
+  --border-color: #d1c5d9;
+  --menu-hover-bg: #eae3f0;
+}
+
+body.theme-sage {
+  --app-bg: #eef4f0;
+  --text-color: #25352a;
+  --card-bg: #f7faf8;
+  --border-color: #c0cfc5;
+  --menu-hover-bg: #e1eae4;
+}
+
 body {
   font-family: "Outfit", sans-serif;
+  background-color: var(--app-bg);
+  color: var(--text-color);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+  overflow: hidden;
 }
+
 /* Toolbar Styles */
 .toolbar-container {
-  @apply absolute left-1/2 -translate-x-1/2 top-5 flex justify-center px-3 py-2 w-fit bg-gray-100 border rounded-lg border-gray-400;
-  box-shadow: 0px 0px 10px rgb(200, 200, 200);
+  @apply absolute left-1/2 -translate-x-1/2 top-5 flex justify-center px-3 py-2 w-fit;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.06);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 .toolbarItem {
-  @apply p-2 m-1 cursor-pointer flex justify-center items-center;
+  @apply p-2 m-1 cursor-pointer flex justify-center items-center rounded-md;
+  color: var(--text-color);
+  transition: all 0.2s ease;
 }
 .toolbarItem:hover {
-  @apply bg-blue-50;
+  background-color: var(--menu-hover-bg);
 }
 .toolbarItem.active {
-  @apply bg-blue-100;
+  background-color: var(--menu-hover-bg);
+  outline: 1.5px solid var(--text-color);
 }
 
 /* Toolbox container */
 .toolbox-container {
-  @apply absolute top-1/2 -translate-y-1/2 left-5 flex-col justify-center px-3 py-2 w-fit h-fit bg-gray-100 border rounded-lg border-gray-400;
-  box-shadow: 0px 0px 10px rgb(200, 200, 200);
+  @apply absolute top-1/2 -translate-y-1/2 left-5 flex-col justify-center px-3 py-2 w-fit h-fit;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.06);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 .heading {
-  @apply font-thin text-gray-700;
+  @apply font-semibold text-sm;
+  color: var(--text-color);
+  opacity: 0.85;
 }
 .item-container {
   @apply my-2 flex justify-start items-center;
 }
 .color-preview {
   @apply w-7 h-7 mr-3 last:mr-0 rounded-sm flex justify-center items-center border;
+  border-color: var(--border-color);
   transition: all 0.2s ease-in-out;
 }
 .color-picker {
@@ -39,29 +90,43 @@ body {
   transition: all 0.2s ease-in-out;
 }
 .box-picker {
-  @apply bg-blue-100 w-7 h-7 px-1 py-0 mr-2 last:mr-0 cursor-pointer rounded-md max-h-[80vh] flex justify-center items-center;
+  @apply w-7 h-7 px-1 py-0 mr-2 last:mr-0 cursor-pointer rounded-md max-h-[80vh] flex justify-center items-center;
+  background-color: var(--menu-hover-bg);
+  color: var(--text-color);
+  transition: all 0.2s ease-in-out;
 }
 .color-picker:hover {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 .box-picker:hover {
-  @apply bg-blue-200;
+  filter: brightness(0.95);
 }
 .color-picker.active {
   @apply border border-white outline outline-1 outline-black;
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 .box-picker.active {
-  @apply bg-blue-300;
+  outline: 1.5px solid var(--text-color);
 }
 
 /* Board Styles */
 .undo-container {
-  @apply absolute left-5 bottom-5 flex justify-center w-fit bg-gray-200 border rounded-md border-gray-400;
-  box-shadow: 0px 0px 5px rgb(230, 230, 230);
+  @apply absolute left-5 bottom-5 flex justify-center w-fit;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.04);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 .undoItem {
-  @apply p-2 cursor-pointer flex justify-center items-center;
+  @apply p-2 cursor-pointer flex justify-center items-center rounded-sm;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+}
+.undoItem:hover {
+  background-color: var(--menu-hover-bg);
 }
 .undoItem.disabled {
   @apply opacity-30 cursor-not-allowed;
@@ -156,5 +221,113 @@ body {
   to {
     opacity: 1;
     transform: translateY(0) scale(1) rotate(-0.5deg);
+  }
+}
+
+/* Theme Selector Styling */
+.theme-selector-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+}
+
+.theme-menu-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.theme-menu-btn span {
+  display: block;
+  width: 100%;
+  border-top: 2.2px solid var(--text-color);
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.theme-menu-btn:hover span {
+  opacity: 1;
+}
+
+.theme-dropdown {
+  position: absolute;
+  top: 28px;
+  left: 0;
+  width: 170px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 8px 0;
+  animation: dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.theme-dropdown-header {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-color);
+  opacity: 0.6;
+  padding: 4px 14px 8px 14px;
+  font-weight: 600;
+  border-bottom: 1.5px dashed var(--border-color);
+  margin-bottom: 6px;
+}
+
+.theme-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 14px;
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.theme-option:hover {
+  background-color: var(--menu-hover-bg);
+}
+
+.theme-option.active {
+  font-weight: 600;
+  background-color: var(--menu-hover-bg);
+}
+
+.theme-color-preview {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

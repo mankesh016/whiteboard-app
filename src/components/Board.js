@@ -28,6 +28,7 @@ import { LuRedo, LuUndo } from "react-icons/lu";
 import WelcomeModal from "./WelcomeModal";
 import classNames from "classnames";
 import { getFontSize } from "../utils/math";
+import ThemeSelector from "./ThemeSelector";
 
 const getResizedElementDetails = (
   clientX,
@@ -673,6 +674,7 @@ function Board() {
       </div>
 
       <WelcomeModal />
+      <ThemeSelector />
     </>
   );
 }
