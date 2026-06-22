@@ -11,6 +11,7 @@ import {
   FONT_FAMILIES,
   TOOL_ACTION_TYPES,
   TOOL_ITEMS,
+  ELEMENT_SELECT_THRESHOLD,
 } from "../constants";
 import BoardContext from "../store/board-context";
 import ToolboxContext from "../store/toolbox-context";
@@ -31,6 +32,8 @@ function Board() {
   const textareaRef = useRef();
   const [actionType, setActionType] = useState(TOOL_ACTION_TYPES.NONE);
   const [elements, setElements, undo, redo, canUndo, canRedo] = useHistory([]);
+  const [selectedElement, setSelectedElement] = useState(null);
+  const hasMovedRef = useRef(false);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -102,6 +105,24 @@ function Board() {
   const handleMouseDown = (event) => {
     const { clientX, clientY } = event;
 
+    if (activeToolItem === TOOL_ITEMS.SELECTION) {
+      const element = [...elements]
+        .reverse()
+        .find((el) =>
+          isPointNearElement(clientX, clientY, el, ELEMENT_SELECT_THRESHOLD),
+        );
+      if (element) {
+        setSelectedElement({
+          ...element,
+          startX: clientX,
+          startY: clientY,
+        });
+        setActionType(TOOL_ACTION_TYPES.MOVING);
+        hasMovedRef.current = false;
+      }
+      return;
+    }
+
     if (activeToolItem === TOOL_ITEMS.ERASER) {
       setActionType(TOOL_ACTION_TYPES.ERASING);
       const deleteElement = [...elements]
@@ -147,6 +168,7 @@ function Board() {
 
     if (activeToolItem === TOOL_ITEMS.BRUSH) {
       const newElement = {
+        id: Date.now(),
         type: activeToolItem,
         points: [{ x: clientX, y: clientY }],
         options,
@@ -170,8 +192,67 @@ function Board() {
   const handleMouseMove = (event) => {
     const { clientX, clientY } = event;
 
+    if (
+      activeToolItem === TOOL_ITEMS.SELECTION &&
+      actionType === TOOL_ACTION_TYPES.NONE
+    ) {
+      const element = [...elements]
+        .reverse()
+        .find((el) =>
+          isPointNearElement(clientX, clientY, el, ELEMENT_SELECT_THRESHOLD),
+        );
+      event.target.style.cursor = element ? "grab" : "default";
+    }
+
     if (actionType === TOOL_ACTION_TYPES.NONE) return;
     if (actionType === TOOL_ACTION_TYPES.WRITING) return;
+
+    if (actionType === TOOL_ACTION_TYPES.MOVING && selectedElement) {
+      if (!hasMovedRef.current) {
+        hasMovedRef.current = true;
+        setElements(elements); // Push current state onto the history stack before movement starts
+      }
+
+      const dx = clientX - selectedElement.startX;
+      const dy = clientY - selectedElement.startY;
+
+      const updatedElement = {
+        ...selectedElement,
+        x1: selectedElement.x1 + dx,
+        y1: selectedElement.y1 + dy,
+        x2: selectedElement.x2 + dx,
+        y2: selectedElement.y2 + dy,
+      };
+
+      if (selectedElement.type === TOOL_ITEMS.BRUSH) {
+        updatedElement.points = selectedElement.points.map((p) => ({
+          x: p.x + dx,
+          y: p.y + dy,
+        }));
+      } else if (selectedElement.type !== TOOL_ITEMS.TEXT) {
+        const roughCanvas = rough.canvas(canvasRef.current);
+        const tempElement = generateElement(
+          selectedElement.id,
+          updatedElement.x1,
+          updatedElement.y1,
+          updatedElement.x2,
+          updatedElement.y2,
+          selectedElement.type,
+          selectedElement.options,
+          roughCanvas.generator,
+        );
+        updatedElement.roughEle = tempElement.roughEle;
+      }
+
+      const copy = [...elements];
+      const index = copy.findIndex((el) => el.id === selectedElement.id);
+      if (index !== -1) {
+        copy[index] = updatedElement;
+        setElements(copy, true);
+      }
+      return;
+    }
+
     if (actionType === TOOL_ACTION_TYPES.ERASING) {
       const deleteElement = [...elements]
         .reverse()
@@ -185,7 +266,7 @@ function Board() {
     }
 
     const index = elements.length - 1;
-    const { x1, y1, type, options } = elements[index];
+    const { id, x1, y1, type, options } = elements[index];
     const roughCanvas = rough.canvas(canvasRef.current);
 
     if (activeToolItem === TOOL_ITEMS.BRUSH) {
@@ -198,7 +279,7 @@ function Board() {
       setElements(copy, true);
     } else {
       const updatedElement = generateElement(
-        index,
+        id,
         x1,
         y1,
         clientX,
@@ -217,7 +298,10 @@ function Board() {
 
   const handleMouseUp = () => {
     if (actionType === TOOL_ACTION_TYPES.WRITING) return;
-    else setActionType(TOOL_ACTION_TYPES.NONE);
+    else {
+      setActionType(TOOL_ACTION_TYPES.NONE);
+      setSelectedElement(null);
+    }
   };
 
   const handleOnBlur = (event) => {
@@ -241,6 +325,14 @@ function Board() {
       setElements(elements.slice(0, -1), true);
     }
     setActionType(TOOL_ACTION_TYPES.NONE);
+  };
+
+  const getCursor = () => {
+    if (actionType === TOOL_ACTION_TYPES.MOVING) return "grabbing";
+    if (activeToolItem === TOOL_ITEMS.TEXT) return "text";
+    if (activeToolItem === TOOL_ITEMS.ERASER) return "crosshair";
+    if (activeToolItem === TOOL_ITEMS.SELECTION) return "default";
+    return "crosshair";
   };
 
   return (
@@ -271,6 +363,7 @@ function Board() {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        style={{ cursor: getCursor() }}
       ></canvas>
 
       <div className="undo-container">

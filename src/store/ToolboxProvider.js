@@ -61,6 +61,7 @@ const reducer = (state, action) => {
 };
 
 const initialToolboxStates = {
+  [TOOL_ITEMS.SELECTION]: { ...INITIAL_TOOLBOX_STATE },
   [TOOL_ITEMS.BRUSH]: { ...INITIAL_TOOLBOX_STATE },
   [TOOL_ITEMS.LINE]: { ...INITIAL_TOOLBOX_STATE },
   [TOOL_ITEMS.RECTANGLE]: { ...INITIAL_TOOLBOX_STATE },

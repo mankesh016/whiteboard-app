@@ -1,4 +1,5 @@
 export const TOOL_ITEMS = {
+  SELECTION: "SELECTION",
   BRUSH: "BRUSH",
   LINE: "LINE",
   RECTANGLE: "RECTANGLE",
@@ -19,6 +20,7 @@ export const TOOL_ACTION_TYPES = {
   DRAWING: "DRAWING",
   ERASING: "ERASING",
   WRITING: "WRITING",
+  MOVING: "MOVING",
 };
 
 export const COLORS = {
@@ -75,4 +77,5 @@ export const ARROW_ANGLE = Math.PI / 6;
 export const ICON_SIZE = 24;
 export const ELEMENT_ERASE_THRESHOLD = 0.5;
 export const POINT_ERASE_THRESHOLD = 5;
+export const ELEMENT_SELECT_THRESHOLD = 10;
 export const BRUSH_STROKE_MULTIPLYER = 4;

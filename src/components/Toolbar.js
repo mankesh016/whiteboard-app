@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import classNames from "classnames";
-import { LuRectangleHorizontal } from "react-icons/lu";
+import { LuMousePointer, LuRectangleHorizontal } from "react-icons/lu";
 import { FaDownload, FaEraser, FaRegCircle } from "react-icons/fa";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { TbSlash } from "react-icons/tb";
@@ -11,6 +11,7 @@ import { TOOL_ITEMS } from "../constants";
 import BoardContext from "../store/board-context";
 
 const MAIN_TOOLS = [
+  { id: TOOL_ITEMS.SELECTION, icon: <LuMousePointer /> },
   { id: TOOL_ITEMS.BRUSH, icon: <IoBrush /> },
   { id: TOOL_ITEMS.LINE, icon: <TbSlash /> },
   { id: TOOL_ITEMS.RECTANGLE, icon: <LuRectangleHorizontal /> },
