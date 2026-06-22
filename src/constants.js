@@ -80,3 +80,31 @@ export const ELEMENT_ERASE_THRESHOLD = 0.5;
 export const POINT_ERASE_THRESHOLD = 5;
 export const ELEMENT_SELECT_THRESHOLD = 10;
 export const BRUSH_STROKE_MULTIPLYER = 4;
+
+export const WELCOME_MODAL = {
+  TITLE: "Welcome to Draw! ✨",
+  SUBTITLE:
+    "Your ultimate creative whiteboard. Sketch, select, move, and scale your ideas dynamically.",
+  CLOSE_ARIA_LABEL: "Close welcome note",
+  BUTTON_TEXT: "Start Creating",
+  FEATURES: [
+    {
+      EMOJI: "🎨",
+      TITLE: "Rich Drawing Tools",
+      DESCRIPTION:
+        "Use Brush, Rectangle, Circle, Arrow, Line, and Text to express your creativity.",
+    },
+    {
+      EMOJI: "🎯",
+      TITLE: "Select & Move",
+      DESCRIPTION:
+        "Switch to the Selection tool to drag elements around (click borders for transparent shapes).",
+    },
+    {
+      EMOJI: "📐",
+      TITLE: "Dynamic Resizing",
+      DESCRIPTION:
+        "Drag shape corners, edges, or endpoints. Text font size scales automatically when resized!",
+    },
+  ],
+};

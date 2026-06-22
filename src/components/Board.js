@@ -25,6 +25,7 @@ import {
 import { useHistory } from "../hooks/useHistory";
 import { downloadCanvasDrawing } from "../utils/export";
 import { LuRedo, LuUndo } from "react-icons/lu";
+import WelcomeModal from "./WelcomeModal";
 import classNames from "classnames";
 import { getFontSize } from "../utils/math";
 
@@ -670,6 +671,8 @@ function Board() {
           <LuRedo />
         </div>
       </div>
+
+      <WelcomeModal />
     </>
   );
 }

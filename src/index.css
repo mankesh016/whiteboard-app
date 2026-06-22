@@ -1,6 +1,9 @@
-/* font family Caveat, Indie Flower, Architects Daughter */
-@import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400..700&family=Indie+Flower&display=swap");
+/* font family Caveat, Indie Flower, Architects Daughter, Outfit */
+@import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400..700&family=Indie+Flower&family=Outfit:wght@300..600&display=swap");
 
+body {
+  font-family: "Outfit", sans-serif;
+}
 /* Toolbar Styles */
 .toolbar-container {
   @apply absolute left-1/2 -translate-x-1/2 top-5 flex justify-center px-3 py-2 w-fit bg-gray-100 border rounded-lg border-gray-400;
@@ -63,4 +66,95 @@
 .undoItem.disabled {
   @apply opacity-30 cursor-not-allowed;
   pointer-events: none;
+}
+
+/* Welcome Modal overlay */
+.welcome-overlay {
+  @apply fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+/* Card container - newspaper cutting style */
+.welcome-card {
+  @apply relative w-[90%] max-w-md p-8 bg-[#faf6eb] border border-[#d3c5ab] rounded-sm flex flex-col items-center text-center;
+  /* Dashed thread around (inner stitched border) */
+  outline: 2px dashed #9e8d70;
+  outline-offset: -10px;
+  /* Flat shadow and slight rotate to feel like a cut clipping */
+  box-shadow:
+    6px 6px 18px rgba(43, 37, 24, 0.15),
+    3px 3px 0px rgba(43, 37, 24, 0.05);
+  transform: rotate(-0.5deg);
+  animation: modalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Close button top right */
+.welcome-close-btn {
+  @apply absolute top-4 right-4 p-1.5 text-[#8c7e65] hover:text-[#524939] rounded-full hover:bg-black/5 transition-all duration-200 cursor-pointer;
+  z-index: 10;
+}
+
+/* Title text */
+.welcome-title {
+  @apply text-2xl font-bold text-[#2b2518] mb-2 mt-2;
+  font-family: "Architects Daughter", sans-serif;
+  letter-spacing: 0.5px;
+}
+
+/* Subtitle description */
+.welcome-subtitle {
+  @apply text-[#5c5340] text-sm mb-6 leading-relaxed;
+}
+
+/* Features checklist container */
+.welcome-features {
+  @apply w-full flex flex-col gap-4 text-left mb-6 border-t border-b border-[#d3c5ab]/60 py-4;
+}
+
+/* Feature row item */
+.feature-item {
+  @apply flex gap-3 items-start;
+}
+
+.feature-emoji {
+  @apply text-xl mt-0.5;
+}
+
+.feature-item strong {
+  @apply text-[#2b2518] text-sm font-semibold block;
+}
+
+.feature-item p {
+  @apply text-[#736852] text-xs leading-relaxed;
+}
+
+/* Call to action button at the bottom - retro stamp style */
+.welcome-get-started-btn {
+  @apply w-full py-2.5 bg-[#3e382b] hover:bg-[#524a3a] text-[#faf6eb] rounded-none font-semibold text-sm border border-[#2b2518] transition-all duration-200 cursor-pointer;
+  box-shadow: 3px 3px 0px #2b2518;
+}
+
+.welcome-get-started-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px #2b2518;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96) rotate(-0.5deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(-0.5deg);
+  }
 }
