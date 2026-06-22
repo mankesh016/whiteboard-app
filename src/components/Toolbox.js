@@ -145,7 +145,10 @@ function Toolbox() {
     changeGap,
   } = useContext(ToolboxContext);
 
-  if (activeToolItem === TOOL_ITEMS.ERASER) {
+  if (
+    activeToolItem === TOOL_ITEMS.ERASER ||
+    activeToolItem === TOOL_ITEMS.SELECTION
+  ) {
     return null;
   }
 
