@@ -21,6 +21,7 @@ export const TOOL_ACTION_TYPES = {
   ERASING: "ERASING",
   WRITING: "WRITING",
   MOVING: "MOVING",
+  RESIZING: "RESIZING",
 };
 
 export const COLORS = {
