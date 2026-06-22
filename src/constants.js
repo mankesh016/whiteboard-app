@@ -28,7 +28,7 @@ export const COLORS = {
   BLACK: "#000000",
   WHITE: "#ffffff",
 
-  STROKE_BLACK: "#212529",
+  STROKE_BLACK: "currentColor",
   STROKE_RED: "#e03131",
   STROKE_BLUE: "#1971c2",
   STROKE_GREEN: "#2f9e44",

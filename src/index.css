@@ -2,6 +2,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400..700&family=Indie+Flower&family=Outfit:wght@300..600&display=swap");
 
 /* Theme Definitions */
+
+/* Yellowish Paper Base */
 body.theme-yellowish {
   --app-bg: #faf6eb;
   --text-color: #3a3222;
@@ -10,6 +12,15 @@ body.theme-yellowish {
   --menu-hover-bg: #f3edd8;
 }
 
+body.theme-yellowish.dark-mode {
+  --app-bg: #1d1b16;
+  --text-color: #fdfaf3;
+  --card-bg: #26241e;
+  --border-color: #5c5340;
+  --menu-hover-bg: #3d372c;
+}
+
+/* Lavender Mist Base */
 body.theme-lavender {
   --app-bg: #f2edf7;
   --text-color: #352a40;
@@ -18,12 +29,29 @@ body.theme-lavender {
   --menu-hover-bg: #eae3f0;
 }
 
+body.theme-lavender.dark-mode {
+  --app-bg: #16141a;
+  --text-color: #faf8fd;
+  --card-bg: #211e26;
+  --border-color: #4b4254;
+  --menu-hover-bg: #342e3b;
+}
+
+/* Sage Mint Base */
 body.theme-sage {
   --app-bg: #eef4f0;
   --text-color: #25352a;
   --card-bg: #f7faf8;
   --border-color: #c0cfc5;
   --menu-hover-bg: #e1eae4;
+}
+
+body.theme-sage.dark-mode {
+  --app-bg: #141815;
+  --text-color: #f7faf8;
+  --card-bg: #1e241f;
+  --border-color: #414f45;
+  --menu-hover-bg: #2c3830;
 }
 
 body {
@@ -330,4 +358,32 @@ body {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* Dark Mode Toggle Button */
+.dark-mode-toggle-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  color: var(--text-color);
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark-mode-toggle-btn:hover {
+  background-color: var(--menu-hover-bg);
+  transform: scale(1.06);
+}
+.dark-mode-toggle-btn:active {
+  transform: scale(0.95);
 }
