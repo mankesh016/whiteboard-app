@@ -17,6 +17,7 @@ function DarkModeToggle({ isDarkMode, setIsDarkMode }) {
       onClick={handleToggle}
       className="dark-mode-toggle-btn"
       aria-label="Toggle dark mode"
+      title="Toggle dark mode"
     >
       {isDarkMode ? <LuSun size={20} /> : <LuMoon size={20} />}
     </button>

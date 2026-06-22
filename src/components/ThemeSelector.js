@@ -36,6 +36,7 @@ function ThemeSelector() {
         onClick={() => setIsOpen(!isOpen)}
         className="theme-menu-btn"
         aria-label="Select background theme"
+        title="Select Theme"
       >
         <span></span>
         <span></span>

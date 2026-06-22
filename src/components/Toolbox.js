@@ -13,6 +13,7 @@ import ToolboxContext from "../store/toolbox-context";
 import BoardContext from "../store/board-context";
 import classNames from "classnames";
 
+// prettier-ignore
 const TOOLBOX_SECTIONS = {
   strokeColors: [
     { label: "BLACK", value: COLORS.STROKE_BLACK },
@@ -27,29 +28,29 @@ const TOOLBOX_SECTIONS = {
     { label: "TRANSPARENT", value: "transparent" },
   ],
   fillStyles: [
-    { id: "dots", icon: <DotsFillIcon />, value: "dots" },
-    { id: "cross-hatch", icon: <CrossHatchFillIcon />, value: "cross-hatch" },
-    { id: "hachure", icon: <HachureFillIcon />, value: "hachure" },
-    { id: "solid", icon: <SolidFillIcon />, value: "solid" },
+    { id: "dots", icon: <DotsFillIcon />, value: "dots", title: "Dots" },
+    { id: "cross-hatch", icon: <CrossHatchFillIcon />, value: "cross-hatch", title: "Cross Hatch" },
+    { id: "hachure", icon: <HachureFillIcon />, value: "hachure", title: "Hachure" },
+    { id: "solid", icon: <SolidFillIcon />, value: "solid", title: "Solid" },
   ],
   strokeWidths: [
-    { id: "small", icon: <StrokeIcon strokeWidth={1} />, value: 1 },
-    { id: "medium", icon: <StrokeIcon strokeWidth={2} />, value: 2 },
-    { id: "large", icon: <StrokeIcon strokeWidth={3} />, value: 3 },
-    { id: "xl", icon: <StrokeIcon strokeWidth={4} />, value: 4 },
-    { id: "xxl", icon: <StrokeIcon strokeWidth={5} />, value: 5 },
+    { id: "small", icon: <StrokeIcon strokeWidth={1} />, value: 1, title: "Thin" },
+    { id: "medium", icon: <StrokeIcon strokeWidth={2} />, value: 2, title: "Normal" },
+    { id: "large", icon: <StrokeIcon strokeWidth={3} />, value: 3, title: "Bold" },
+    { id: "xl", icon: <StrokeIcon strokeWidth={4} />, value: 4, title: "Extra Bold" },
+    { id: "xxl", icon: <StrokeIcon strokeWidth={5} />, value: 5, title: "Thick" },
   ],
   roughnessOptions: [
-    { id: "rough-0", icon: <LineStyleIcon roughness={0} />, value: 0 },
-    { id: "rough-1", icon: <LineStyleIcon roughness={1} />, value: 1 },
-    { id: "rough-2", icon: <LineStyleIcon roughness={2} />, value: 2 },
-    { id: "rough-3", icon: <LineStyleIcon roughness={3} />, value: 3 },
+    { id: "rough-0", icon: <LineStyleIcon roughness={0} />, value: 0, title: "Classic" },
+    { id: "rough-1", icon: <LineStyleIcon roughness={1} />, value: 1, title: "Soft Handdrawn" },
+    { id: "rough-2", icon: <LineStyleIcon roughness={2} />, value: 2, title: "Handdrawn" },
+    { id: "rough-3", icon: <LineStyleIcon roughness={3} />, value: 3, title: "Very Rough" },
   ],
   gapOptions: [
-    { id: "gap-1", icon: <GapIcon gap={3} />, value: 15 },
-    { id: "gap-2", icon: <GapIcon gap={4} />, value: 25 },
-    { id: "gap-3", icon: <GapIcon gap={5} />, value: 35 },
-    { id: "gap-4", icon: <GapIcon gap={7} />, value: 45 },
+    { id: "gap-1", icon: <GapIcon gap={3} />, value: 15, title: "Tiny Gap" },
+    { id: "gap-2", icon: <GapIcon gap={4} />, value: 25, title: "Small Gap" },
+    { id: "gap-3", icon: <GapIcon gap={5} />, value: 35, title: "Medium Gap" },
+    { id: "gap-4", icon: <GapIcon gap={7} />, value: 45, title: "Large Gap" },
   ],
 };
 
@@ -79,6 +80,7 @@ const ColorPickerSection = ({ title, presets, colorValue, onSelect }) => {
               active: colorValue === color.value,
             })}
             onClick={() => onSelect(color.value)}
+            title={color.label}
             style={
               color.value === "transparent"
                 ? {
@@ -95,6 +97,7 @@ const ColorPickerSection = ({ title, presets, colorValue, onSelect }) => {
           className={classNames("color-picker", {
             active: isCustom,
           })}
+          title="Custom Color"
           style={{
             opacity: 0.8,
             background:
@@ -124,6 +127,7 @@ const BoxPickerSection = ({ title, items, currentValue, onSelect }) => (
             active: currentValue === item.value,
           })}
           onClick={() => onSelect(item.value)}
+          title={item.title}
         >
           {item.icon}
         </div>

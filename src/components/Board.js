@@ -710,6 +710,7 @@ function Board() {
           className={classNames("undoItem", { disabled: !canUndo() })}
           onClick={() => undo()}
           disabled={!canUndo}
+          title="Undo"
         >
           <LuUndo />
         </div>
@@ -717,6 +718,7 @@ function Board() {
           className={classNames("undoItem", { disabled: !canRedo() })}
           onClick={() => redo()}
           disabled={!canRedo}
+          title="Redo"
         >
           <LuRedo />
         </div>
