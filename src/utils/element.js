@@ -97,3 +97,24 @@ export function getSvgPathFromStroke(stroke) {
   d.push("Z");
   return d.join(" ");
 }
+
+export const getThemedColor = (color, isDarkMode) => {
+  if (!color || color === "transparent") return color;
+
+  const lower = color.toLowerCase();
+  const isBlack =
+    lower === "#000" ||
+    lower === "#000000" ||
+    lower === "#212529" ||
+    lower === "currentcolor";
+  const isWhite = lower === "#fff" || lower === "#ffffff";
+
+  if (isDarkMode) {
+    if (isBlack) return "#ffffff";
+    if (isWhite) return "#212529";
+  } else {
+    if (isBlack) return "#212529";
+    if (isWhite) return "#ffffff";
+  }
+  return color;
+};

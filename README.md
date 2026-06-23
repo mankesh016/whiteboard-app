@@ -1,8 +1,8 @@
-# 🖊️ Whiteboard App
+# 🖊️ Draw - Whiteboard App
 
-A feature-rich, interactive whiteboard application built with **React.js** and **Tailwind CSS** — draw shapes, sketch freehand, and export your work, all in the browser.
+A interactive whiteboard application built with **React.js** and **Tailwind CSS**. Draw shapes, sketch freehand, customize themes, toggle dark mode, and export your work — all in a polished, fluid interface.
 
-🔗 **Live Demo:** [whiteboard-app-henna.vercel.app](https://whiteboard-app-henna.vercel.app)
+🔗 **Live Demo:** [https://draw.aftercp.com](https://draw.aftercp.com)
 
 ---
 
@@ -20,13 +20,14 @@ A feature-rich, interactive whiteboard application built with **React.js** and *
 
 ## 🛠️ Tech Stack
 
-| Technology        | Purpose                        |
-| ----------------- | ------------------------------ |
-| React.js          | UI framework & component logic |
-| Tailwind CSS      | Utility-first styling          |
-| HTML5 Canvas      | Drawing surface                |
-| React Context API | Global state management        |
-| Vercel            | Deployment & hosting           |
+| Technology        | Purpose                              |
+| ----------------- | ------------------------------------ |
+| React.js          | UI library & component logic         |
+| Tailwind CSS      | Utility-first responsive styling     |
+| HTML5 Canvas      | Drawing surface & graphics rendering |
+| Rough.js          | Hand-drawn/sketchy geometric shapes  |
+| Perfect-Freehand  | Artistic brush strokes               |
+| React Context API | Decoupled board and toolbox state    |
 
 ---
 
@@ -64,7 +65,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 npm run build
 ```
 
-The optimized production build will be in the `build/` folder.
+The optimized production build will be created in the `build/` folder.
 
 ---
 
@@ -75,24 +76,27 @@ whiteboard-app/
 ├── public/
 └── src/
     ├── components/
-    │   ├── Board.js          # Main canvas drawing surface
-    │   ├── Toolbar.js        # Top toolbar (tools & actions)
-    │   └── Toolbox.js        # Style controls panel
+    │   ├── Board.js            # Main canvas viewport and events
+    │   ├── DarkModeToggle.js   # Dark/light mode toggle button
+    │   ├── ThemeSelector.js    # Base color theme dropdown menu
+    │   ├── Toolbar.js          # Toolbar (draw/select tools & download)
+    │   ├── Toolbox.js          # Options panel (styles, sizes, gap)
+    │   └── WelcomeModal.js     # First-time visitor onboarding card
     ├── hooks/
-    │   └── useHistory.js     # Stack-based undo/redo hook
+    │   └── useHistory.js       # Stack-based undo/redo hook
     ├── icons/
     ├── store/
-    │   ├── board-context.js       # Board state context
-    │   ├── BoardProvider.js       # Board context provider
-    │   ├── toolbox-context.js     # Toolbox state context
-    │   └── ToolboxProvider.js     # Toolbox context provider
+    │   ├── board-context.js    # Board selection context
+    │   ├── BoardProvider.js    # Board provider wrapper
+    │   ├── toolbox-context.js  # Style selections context
+    │   └── ToolboxProvider.js  # Style provider wrapper
     ├── utils/
-    │   ├── element.js        # Element creation & rendering helpers
-    │   ├── export.js         # Canvas export logic
-    │   ├── geometry.js       # Hit detection & geometric helpers
-    │   └── math.js           # Math utility functions
+    │   ├── element.js          # Shape generation, rendering & themes
+    │   ├── export.js           # PNG export utility
+    │   ├── geometry.js         # Bounds, hit testing & resizing
+    │   └── math.js             # Arrowhead calculation & formulas
     ├── App.js
-    └── constants.js          # App-wide constants
+    └── constants.js            # Key settings and defaults
 ```
 
 ---
@@ -108,8 +112,8 @@ Board state (elements, history) and Toolbox state (stroke, fill, roughness, gap)
 **Geometry & Math Utils**
 Hit detection, element bounds, and drawing math are abstracted into `geometry.js` and `math.js`, keeping component code readable and the logic independently testable.
 
----
+**Dynamic Element Redrawing**
+To support dark mode color inversion without corrupting drawing history, element shapes (`roughEle`) are generated on-the-fly inside the render pipeline based on the theme context, avoiding state mutations and ensuring smooth transitions.
 
-## 🌐 Deployment
-
-Deployed on **Vercel** with automatic deployments on every push to `main`.
+**Freehand Canvas Rendering**
+Integrates `perfect-freehand` stroke point generation and transforms it to Path2D svg paths, rendered directly with smooth HTML5 Canvas context calls.

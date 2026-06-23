@@ -11,14 +11,15 @@ import { TOOL_ITEMS } from "../constants";
 import BoardContext from "../store/board-context";
 
 const MAIN_TOOLS = [
-  { id: TOOL_ITEMS.SELECTION, icon: <LuMousePointer /> },
-  { id: TOOL_ITEMS.BRUSH, icon: <IoBrush /> },
-  { id: TOOL_ITEMS.LINE, icon: <TbSlash /> },
-  { id: TOOL_ITEMS.RECTANGLE, icon: <LuRectangleHorizontal /> },
-  { id: TOOL_ITEMS.CIRCLE, icon: <FaRegCircle /> },
-  { id: TOOL_ITEMS.ARROW, icon: <FaArrowRightLong /> },
-  { id: TOOL_ITEMS.TEXT, icon: <PiTextAaBold /> },
-  { id: TOOL_ITEMS.ERASER, icon: <FaEraser /> },
+  { id: TOOL_ITEMS.SELECTION, icon: <LuMousePointer />, title: "Selection" },
+  { id: TOOL_ITEMS.BRUSH, icon: <IoBrush />, title: "Brush" },
+  { id: TOOL_ITEMS.LINE, icon: <TbSlash />, title: "Line" },
+  // prettier-ignore
+  { id: TOOL_ITEMS.RECTANGLE, icon: <LuRectangleHorizontal />, title: "Rectangle" },
+  { id: TOOL_ITEMS.CIRCLE, icon: <FaRegCircle />, title: "Circle" },
+  { id: TOOL_ITEMS.ARROW, icon: <FaArrowRightLong />, title: "Arrow" },
+  { id: TOOL_ITEMS.TEXT, icon: <PiTextAaBold />, title: "Text" },
+  { id: TOOL_ITEMS.ERASER, icon: <FaEraser />, title: "Eraser" },
 ];
 
 const handleDownloadClick = () => {
@@ -31,28 +32,32 @@ function Toolbar() {
   return (
     <>
       <div className="toolbar-container">
-        {MAIN_TOOLS.map(({ id, icon }) => (
+        {MAIN_TOOLS.map(({ id, icon, title }) => (
           <ToolButton
             key={id}
             icon={icon}
             isActive={activeToolItem === id}
             onClick={() => toolClickHandler(id)}
+            title={title}
           />
         ))}
 
         <ToolButton
           icon={<FaDownload />}
           onClick={() => handleDownloadClick()}
+          title="Download"
         />
       </div>
     </>
   );
 }
 
-const ToolButton = ({ icon, onClick, isActive, className = "toolbarItem" }) => (
+// prettier-ignore
+const ToolButton = ({ icon, onClick, isActive, title, className = "toolbarItem" }) => (
   <div
     className={classNames(className, { active: isActive })}
     onClick={onClick}
+    title={title}
   >
     {icon}
   </div>
