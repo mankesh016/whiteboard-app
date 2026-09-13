@@ -1,6 +1,6 @@
 # 🖊️ Draw - Whiteboard App
 
-A interactive whiteboard application built with **React.js** and **Tailwind CSS**. Draw shapes, sketch freehand, customize themes, toggle dark mode, and export your work — all in a polished, fluid interface.
+A interactive whiteboard application built with **React.js**, **Vite**, and **Tailwind CSS**. Draw shapes, sketch freehand, customize themes, toggle dark mode, and export your work — all in a polished, fluid interface.
 
 🔗 **Live Demo:** [https://draw.aftercp.com](https://draw.aftercp.com)
 
@@ -23,6 +23,7 @@ A interactive whiteboard application built with **React.js** and **Tailwind CSS*
 | Technology        | Purpose                              |
 | ----------------- | ------------------------------------ |
 | React.js          | UI library & component logic         |
+| Vite              | Dev server & production build tool   |
 | Tailwind CSS      | Utility-first responsive styling     |
 | HTML5 Canvas      | Drawing surface & graphics rendering |
 | Rough.js          | Hand-drawn/sketchy geometric shapes  |
@@ -54,10 +55,10 @@ npm install
 ### Running Locally
 
 ```bash
-npm start
+npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ### Building for Production
 
@@ -65,7 +66,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 npm run build
 ```
 
-The optimized production build will be created in the `build/` folder.
+The optimized production build will be created in the `dist/` folder. Preview it locally with `npm run preview`.
 
 ---
 
@@ -76,27 +77,27 @@ whiteboard-app/
 ├── public/
 └── src/
     ├── components/
-    │   ├── Board.js            # Main canvas viewport and events
-    │   ├── DarkModeToggle.js   # Dark/light mode toggle button
-    │   ├── ThemeSelector.js    # Base color theme dropdown menu
-    │   ├── Toolbar.js          # Toolbar (draw/select tools & download)
-    │   ├── Toolbox.js          # Options panel (styles, sizes, gap)
-    │   └── WelcomeModal.js     # First-time visitor onboarding card
+    │   ├── Board.jsx            # Main canvas viewport and events
+    │   ├── DarkModeToggle.jsx   # Dark/light mode toggle button
+    │   ├── ThemeSelector.jsx    # Base color theme dropdown menu
+    │   ├── Toolbar.jsx          # Toolbar (draw/select tools & download)
+    │   ├── Toolbox.jsx          # Options panel (styles, sizes, gap)
+    │   └── WelcomeModal.jsx     # First-time visitor onboarding card
     ├── hooks/
-    │   └── useHistory.js       # Stack-based undo/redo hook
+    │   └── useHistory.js        # Stack-based undo/redo hook
     ├── icons/
     ├── store/
-    │   ├── board-context.js    # Board selection context
-    │   ├── BoardProvider.js    # Board provider wrapper
-    │   ├── toolbox-context.js  # Style selections context
-    │   └── ToolboxProvider.js  # Style provider wrapper
+    │   ├── board-context.js     # Board selection context
+    │   ├── BoardProvider.jsx    # Board provider wrapper
+    │   ├── toolbox-context.js   # Style selections context
+    │   └── ToolboxProvider.jsx  # Style provider wrapper
     ├── utils/
-    │   ├── element.js          # Shape generation, rendering & themes
-    │   ├── export.js           # PNG export utility
-    │   ├── geometry.js         # Bounds, hit testing & resizing
-    │   └── math.js             # Arrowhead calculation & formulas
-    ├── App.js
-    └── constants.js            # Key settings and defaults
+    │   ├── element.js           # Shape generation, rendering & themes
+    │   ├── export.js            # PNG export utility
+    │   ├── geometry.js          # Bounds, hit testing & resizing
+    │   └── math.js              # Arrowhead calculation & formulas
+    ├── App.jsx
+    └── constants.js             # Key settings and defaults
 ```
 
 ---
