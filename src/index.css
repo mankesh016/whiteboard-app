@@ -1,5 +1,5 @@
-/* font family Caveat, Indie Flower, Architects Daughter, Outfit */
-@import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400..700&family=Indie+Flower&family=Outfit:wght@300..600&display=swap");
+/* font family Caveat, Indie Flower, Architects Daughter, Outfit, JetBrains Mono */
+@import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Caveat:wght@400..700&family=Indie+Flower&family=JetBrains+Mono:wght@500;600;700&family=Outfit:wght@300..600&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -390,4 +390,499 @@ body {
 }
 .dark-mode-toggle-btn:active {
   transform: scale(0.95);
+}
+
+/* Live Collaboration */
+/* Visual language follows the "Collab UI Redesign" canvas: welded button
+   segments instead of floating pills, hairline dividers, JetBrains Mono
+   for anything machine-readable (codes/labels), green reserved strictly
+   for live state, and explicit copy buttons instead of a clickable plate.
+   Colors are mapped onto this app's existing theme variables (--card-bg,
+   --border-color, --text-color) rather than the mock's fixed hex values,
+   so it still respects dark mode and the yellowish/lavender/sage themes. */
+@keyframes collabPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(47, 127, 88, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(47, 127, 88, 0);
+  }
+}
+@keyframes collabPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes collabFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.collab-bar {
+  @apply flex items-stretch;
+  position: fixed;
+  top: 20px;
+  right: 74px;
+  z-index: 45;
+  height: 46px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 11px;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.05),
+    0 8px 20px -14px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+/* Offline: one welded segment - Go live + Join a room, split by a hairline
+   divider rather than two separate floating pills. */
+.collab-btn-primary {
+  @apply flex items-center gap-2 px-4 font-semibold text-sm cursor-pointer whitespace-nowrap;
+  border: none;
+  background-color: #2f7f58;
+  color: #ffffff;
+}
+.collab-btn-primary:hover {
+  background-color: #276b4a;
+}
+
+.collab-btn-secondary {
+  @apply px-4 font-semibold text-sm cursor-pointer whitespace-nowrap;
+  border: none;
+  border-left: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-color);
+}
+.collab-btn-secondary:hover {
+  background-color: var(--menu-hover-bg);
+}
+
+/* Live: dot + label, divider, avatars, subtle Share pill, vertical-dots menu. */
+.collab-live-cluster {
+  @apply flex items-center gap-3;
+  padding: 0 8px 0 14px;
+}
+
+.collab-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #2f7f58;
+  display: inline-block;
+  animation: collabPulse 2.2s infinite;
+}
+
+.collab-live-label {
+  @apply text-xs font-bold uppercase;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.16em;
+  color: #2f7f58;
+}
+
+.collab-divider {
+  width: 1px;
+  height: 22px;
+  background-color: var(--border-color);
+}
+
+.collab-avatar {
+  @apply flex items-center justify-center text-xs font-semibold;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #ffffff;
+  border: 1.5px solid var(--card-bg);
+  position: relative;
+}
+.collab-avatar-overflow {
+  @apply flex items-center justify-center font-semibold;
+  height: 28px;
+  margin-left: 5px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background-color: var(--menu-hover-bg);
+  color: var(--text-color);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11.5px;
+}
+
+.collab-share-btn {
+  @apply font-semibold text-sm cursor-pointer;
+  height: 32px;
+  padding: 0 13px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--menu-hover-bg);
+  color: var(--text-color);
+}
+.collab-share-btn:hover {
+  filter: brightness(0.95);
+}
+
+/* Vertical ellipsis (3 stacked dots), not a horizontal "..." glyph. */
+.collab-menu-btn {
+  @apply flex flex-col items-center justify-center gap-[3px] cursor-pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  opacity: 0.75;
+}
+.collab-menu-btn:hover {
+  background-color: var(--menu-hover-bg);
+  opacity: 1;
+}
+.collab-menu-btn span {
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background-color: currentColor;
+  display: block;
+}
+
+.roster-menu {
+  position: fixed;
+  top: 68px;
+  right: 74px;
+  z-index: 46;
+  width: 268px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 14px 34px -16px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  animation: collabPopIn 140ms ease-out;
+}
+.roster-heading {
+  @apply flex items-center justify-between;
+  padding: 12px 14px;
+  background-color: var(--menu-hover-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+.roster-heading-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--text-color);
+  opacity: 0.5;
+}
+.roster-heading-count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-color);
+  opacity: 0.5;
+}
+.roster-list {
+  padding: 6px;
+}
+.roster-item {
+  @apply flex items-center gap-2;
+  padding: 8px;
+}
+.roster-item-avatar {
+  @apply flex items-center justify-center text-xs font-semibold;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: #ffffff;
+}
+.roster-item-label {
+  @apply text-sm font-medium;
+  color: var(--text-color);
+}
+.roster-item-tag {
+  @apply text-xs font-semibold;
+  margin-left: auto;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.1em;
+  color: var(--text-color);
+  opacity: 0.4;
+}
+.roster-footer {
+  padding: 6px;
+  border-top: 1px solid var(--border-color);
+}
+.roster-leave-btn {
+  @apply w-full flex items-center gap-2 text-left text-sm font-semibold cursor-pointer;
+  padding: 9px 8px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: #b3452b;
+}
+.roster-leave-btn:hover {
+  background-color: rgba(179, 69, 43, 0.07);
+}
+
+.collab-toasts {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 47;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+  pointer-events: none;
+}
+.collab-toast {
+  @apply flex items-center gap-2;
+  padding: 11px 16px 11px 12px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 11px;
+  box-shadow: 0 14px 30px -18px rgba(0, 0, 0, 0.45);
+  animation: collabPopIn 220ms ease-out;
+}
+.collab-toast-avatar {
+  @apply flex items-center justify-center text-xs font-semibold;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #ffffff;
+}
+.collab-toast-text {
+  @apply text-sm font-medium whitespace-nowrap;
+  color: var(--text-color);
+}
+
+.collab-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.28);
+  animation: collabFadeIn 140ms ease-out;
+}
+.collab-modal-card {
+  width: 420px;
+  max-width: calc(100vw - 48px);
+  padding: 28px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.26);
+  animation: collabPopIn 180ms ease-out;
+}
+.collab-modal-title {
+  @apply text-2xl font-bold;
+  letter-spacing: -0.01em;
+  color: var(--text-color);
+}
+.collab-modal-subtitle {
+  @apply text-sm;
+  line-height: 1.5;
+  margin-top: 8px;
+  color: var(--text-color);
+  opacity: 0.66;
+}
+.collab-modal-input {
+  @apply w-full;
+  margin-top: 18px;
+  height: 50px;
+  padding: 0 16px;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--text-color);
+  background-color: var(--app-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  outline: none;
+}
+.collab-modal-input:focus {
+  border-color: #2f7f58;
+}
+.collab-modal-code-input {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.collab-modal-error {
+  @apply text-xs font-medium;
+  min-height: 18px;
+  margin-top: 8px;
+  color: #b3452b;
+}
+.collab-modal-actions {
+  @apply flex gap-2;
+  margin-top: 18px;
+}
+.collab-modal-btn-secondary {
+  @apply px-4 font-semibold text-sm cursor-pointer;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-color);
+}
+.collab-modal-btn-secondary:hover {
+  background-color: var(--menu-hover-bg);
+}
+.collab-modal-btn-primary {
+  @apply flex-1 font-semibold text-sm cursor-pointer;
+  height: 46px;
+  border-radius: 12px;
+  border: none;
+  color: #ffffff;
+}
+
+/* Share sheet - redesigned: a tinted "room is live" header with its own
+   close button, a display-only code plate (no longer click-to-copy), a
+   separate link plate, and two explicit copy buttons underneath. */
+.collab-share-header {
+  @apply flex items-center gap-2;
+  padding: 11px 14px 11px 20px;
+  margin: -28px -28px 0;
+  background-color: rgba(47, 127, 88, 0.08);
+  border-bottom: 1px solid rgba(47, 127, 88, 0.18);
+  border-radius: 20px 20px 0 0;
+}
+.collab-share-close {
+  @apply flex items-center justify-center cursor-pointer;
+  margin-left: auto;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  opacity: 0.55;
+}
+.collab-share-close:hover {
+  opacity: 1;
+}
+.collab-share-body {
+  padding-top: 20px;
+}
+.collab-share-field-label {
+  @apply text-xs font-semibold;
+  margin-top: 20px;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.14em;
+  color: var(--text-color);
+  opacity: 0.45;
+}
+.collab-share-code {
+  @apply w-full;
+  margin-top: 8px;
+  padding: 14px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-align: center;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background-color: var(--app-bg);
+  color: var(--text-color);
+}
+.collab-share-link {
+  @apply text-xs w-full;
+  margin-top: 10px;
+  padding: 11px 13px;
+  font-family: "JetBrains Mono", monospace;
+  border-radius: 10px;
+  background-color: var(--menu-hover-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  opacity: 0.75;
+  word-break: break-all;
+}
+.collab-share-copy-row {
+  @apply flex gap-2;
+  margin-top: 10px;
+}
+.collab-copy-btn {
+  @apply flex-1 flex items-center justify-center gap-2 font-semibold text-sm cursor-pointer whitespace-nowrap;
+  min-width: 0;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-color);
+}
+.collab-copy-btn:hover {
+  background-color: var(--menu-hover-bg);
+}
+.collab-copy-btn.is-primary {
+  border: none;
+  background-color: #24221a;
+  color: #ffffff;
+}
+.collab-copy-btn.is-primary:hover {
+  background-color: #38342a;
+}
+.collab-copy-btn.is-copied {
+  border-color: #2f7f58;
+  background-color: rgba(47, 127, 88, 0.1);
+  color: #276b4a;
+}
+.collab-copy-btn.is-primary.is-copied {
+  background-color: #276b4a;
+  color: #ffffff;
+}
+.collab-share-back-btn {
+  @apply w-full font-semibold text-sm cursor-pointer;
+  margin-top: 18px;
+  height: 48px;
+  border: none;
+  border-top: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-color);
+}
+.collab-share-back-btn:hover {
+  background-color: var(--menu-hover-bg);
+}
+
+.collab-status-line {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  z-index: 20;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-color);
+  opacity: 0.55;
+}
+
+.peer-cursor {
+  position: fixed;
+  pointer-events: none;
+  z-index: 40;
+  transition: transform 80ms linear;
+}
+.peer-cursor-arrow {
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 12px solid transparent;
+  transform: rotate(-12deg);
+}
+.peer-cursor-label {
+  @apply text-xs font-semibold whitespace-nowrap;
+  margin: 2px 0 0 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }

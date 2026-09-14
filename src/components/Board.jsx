@@ -1,10 +1,4 @@
-import {
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import rough from "roughjs";
 import {
   BRUSH_STROKE_MULTIPLYER,
@@ -15,11 +9,7 @@ import {
 } from "../constants";
 import BoardContext from "../store/board-context";
 import ToolboxContext from "../store/toolbox-context";
-import {
-  generateElement,
-  getSvgPathFromStroke,
-  getThemedColor,
-} from "../utils/element";
+import { generateElement, getSvgPathFromStroke, getThemedColor } from "../utils/element";
 import { getStroke } from "perfect-freehand";
 import {
   isPointNearElement,
@@ -27,7 +17,7 @@ import {
   getCursorForHandle,
   getResizedElementDetails,
 } from "../utils/geometry";
-import { useHistory } from "../hooks/useHistory";
+import CollabContext from "../store/collab-context";
 import { downloadCanvasDrawing } from "../utils/export";
 import { LuRedo, LuUndo } from "react-icons/lu";
 import WelcomeModal from "./WelcomeModal";
@@ -36,6 +26,8 @@ import { getFontSize } from "../utils/math";
 import ThemeSelector from "./ThemeSelector";
 import DarkModeToggle from "./DarkModeToggle";
 
+const CURSOR_EMIT_INTERVAL_MS = 40;
+
 function Board() {
   const { toolboxState } = useContext(ToolboxContext);
   const { activeToolItem } = useContext(BoardContext);
@@ -43,14 +35,107 @@ function Board() {
 
   const textareaRef = useRef();
   const [actionType, setActionType] = useState(TOOL_ACTION_TYPES.NONE);
-  const [elements, setElements, undo, redo, canUndo, canRedo] = useHistory([]);
+  const [elements, setElements] = useState([]);
+
+  // Per-user undo/redo: each entry describes ONE operation THIS client
+  // performed (never a peer's). A single shared undo stack doesn't make
+  // sense once multiple people can edit the same board - hitting Ctrl+Z
+  // should only ever remove YOUR last action, never someone else's shape.
+  const [myUndoStack, setMyUndoStack] = useState([]);
+  const [myRedoStack, setMyRedoStack] = useState([]);
+
+  const { socketRef, isConnected, emitElementAdd, emitElementUpdate, emitElementDelete, emitCursor } =
+    useContext(CollabContext);
+
+  // The socket connection itself now lives in CollabProvider (shared with
+  // CollabUI/PeerCursors), so Board.jsx registers its OWN listeners for the
+  // events it specifically cares about, using the socket handed back via
+  // context. setElements is stable across renders (a plain useState setter)
+  // and every handler here uses the FUNCTIONAL update form, so these can
+  // safely be attached once - no stale-closure risk, unlike a naive version
+  // of this that read `elements` directly.
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket) return;
+
+    const handleJoined = (payload) => setElements(payload.elements);
+    const handleAdd = (element) => setElements((prev) => [...prev, element]);
+    const handleUpdate = (element) => {
+      setElements((prev) => {
+        const copy = [...prev];
+        const index = copy.findIndex((el) => el.id === element.id);
+        if (index !== -1) copy[index] = element;
+        return copy;
+      });
+    };
+    const handleDelete = ({ id }) => setElements((prev) => prev.filter((el) => el.id !== id));
+
+    socket.on("joined", handleJoined);
+    socket.on("element:add", handleAdd);
+    socket.on("element:update", handleUpdate);
+    socket.on("element:delete", handleDelete);
+
+    return () => {
+      socket.off("joined", handleJoined);
+      socket.off("element:add", handleAdd);
+      socket.off("element:update", handleUpdate);
+      socket.off("element:delete", handleDelete);
+    };
+  }, [isConnected, socketRef]);
+
   const [selectedElement, setSelectedElement] = useState(null);
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [resizeHandle, setResizeHandle] = useState(null);
-  const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem("whiteboard-dark-mode") === "true",
-  );
+  const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem("whiteboard-dark-mode") === "true");
   const hasMovedRef = useRef(false);
+  const lastCursorSentRef = useRef(0);
+
+  const pushUndo = (entry) => {
+    setMyUndoStack((stack) => [...stack, entry]);
+    setMyRedoStack([]);
+  };
+
+  const myUndo = () => {
+    setMyUndoStack((stack) => {
+      if (stack.length === 0) return stack;
+      const entry = stack[stack.length - 1];
+
+      if (entry.type === "add") {
+        setElements((prev) => prev.filter((el) => el.id !== entry.element.id));
+        emitElementDelete(entry.element.id);
+      } else if (entry.type === "delete") {
+        setElements((prev) => [...prev, entry.element]);
+        emitElementAdd(entry.element);
+      } else if (entry.type === "update") {
+        setElements((prev) => prev.map((el) => (el.id === entry.after.id ? entry.before : el)));
+        emitElementUpdate(entry.before);
+      }
+
+      setMyRedoStack((redoStack) => [...redoStack, entry]);
+      return stack.slice(0, -1);
+    });
+  };
+
+  const myRedo = () => {
+    setMyRedoStack((stack) => {
+      if (stack.length === 0) return stack;
+      const entry = stack[stack.length - 1];
+
+      if (entry.type === "add") {
+        setElements((prev) => [...prev, entry.element]);
+        emitElementAdd(entry.element);
+      } else if (entry.type === "delete") {
+        setElements((prev) => prev.filter((el) => el.id !== entry.element.id));
+        emitElementDelete(entry.element.id);
+      } else if (entry.type === "update") {
+        setElements((prev) => prev.map((el) => (el.id === entry.after.id ? entry.after : el)));
+        emitElementUpdate(entry.after);
+      }
+
+      setMyUndoStack((undoStack) => [...undoStack, entry]);
+      return stack.slice(0, -1);
+    });
+  };
 
   useEffect(() => {
     if (isDarkMode) {
@@ -63,15 +148,15 @@ function Board() {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if ((event.ctrlKey || event.metaKey) && event.key === "z") {
-        if (event.shiftKey) redo();
-        else undo();
+        if (event.shiftKey) myRedo();
+        else myUndo();
       } else if ((event.ctrlKey || event.metaKey) && event.key === "y") {
-        redo();
+        myRedo();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [undo, redo]);
+  }, [myUndo, myRedo]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -163,12 +248,7 @@ function Board() {
         context.strokeStyle = "#1971c2";
         context.lineWidth = 1.5;
         context.setLineDash([4, 4]);
-        context.strokeRect(
-          minX - 4,
-          minY - 4,
-          maxX - minX + 8,
-          maxY - minY + 8,
-        );
+        context.strokeRect(minX - 4, minY - 4, maxX - minX + 8, maxY - minY + 8);
         context.setLineDash([]);
 
         context.fillStyle = "#ffffff";
@@ -224,9 +304,7 @@ function Board() {
 
       const element = [...elements]
         .reverse()
-        .find((el) =>
-          isPointNearElement(clientX, clientY, el, ELEMENT_SELECT_THRESHOLD),
-        );
+        .find((el) => isPointNearElement(clientX, clientY, el, ELEMENT_SELECT_THRESHOLD));
       if (element) {
         setSelectedElementId(element.id);
         setSelectedElement({
@@ -246,13 +324,13 @@ function Board() {
 
     if (activeToolItem === TOOL_ITEMS.ERASER) {
       setActionType(TOOL_ACTION_TYPES.ERASING);
-      const deleteElement = [...elements]
-        .reverse()
-        .find((element) => isPointNearElement(clientX, clientY, element));
+      const deleteElement = [...elements].reverse().find((element) => isPointNearElement(clientX, clientY, element));
 
       if (deleteElement) {
         const newState = elements.filter((el) => el.id !== deleteElement.id);
         setElements(newState);
+        emitElementDelete(deleteElement.id);
+        pushUndo({ type: "delete", element: deleteElement });
       }
       return;
     }
@@ -283,6 +361,7 @@ function Board() {
         options,
       };
       setElements([...elements, newElement]);
+      emitElementAdd(newElement);
       return;
     }
     setActionType(TOOL_ACTION_TYPES.DRAWING);
@@ -295,6 +374,7 @@ function Board() {
         options,
       };
       setElements([...elements, newElement]);
+      emitElementAdd(newElement);
     } else {
       const newElement = generateElement(
         Date.now(),
@@ -307,16 +387,20 @@ function Board() {
         roughCanvas.generator,
       );
       setElements([...elements, newElement]);
+      emitElementAdd(newElement);
     }
   };
 
   const handleMouseMove = (event) => {
     const { clientX, clientY } = event;
 
-    if (
-      activeToolItem === TOOL_ITEMS.SELECTION &&
-      actionType === TOOL_ACTION_TYPES.NONE
-    ) {
+    const now = Date.now();
+    if (now - lastCursorSentRef.current > CURSOR_EMIT_INTERVAL_MS) {
+      lastCursorSentRef.current = now;
+      emitCursor(clientX, clientY);
+    }
+
+    if (activeToolItem === TOOL_ITEMS.SELECTION && actionType === TOOL_ACTION_TYPES.NONE) {
       let cursor = "default";
       let hoverElement = null;
 
@@ -327,14 +411,7 @@ function Board() {
           if (handle) {
             cursor = getCursorForHandle(handle);
             hoverElement = selEl;
-          } else if (
-            isPointNearElement(
-              clientX,
-              clientY,
-              selEl,
-              ELEMENT_SELECT_THRESHOLD,
-            )
-          ) {
+          } else if (isPointNearElement(clientX, clientY, selEl, ELEMENT_SELECT_THRESHOLD)) {
             cursor = "move";
             hoverElement = selEl;
           }
@@ -344,9 +421,7 @@ function Board() {
       if (!hoverElement) {
         const element = [...elements]
           .reverse()
-          .find((el) =>
-            isPointNearElement(clientX, clientY, el, ELEMENT_SELECT_THRESHOLD),
-          );
+          .find((el) => isPointNearElement(clientX, clientY, el, ELEMENT_SELECT_THRESHOLD));
         if (element) {
           cursor = "grab";
         }
@@ -361,25 +436,16 @@ function Board() {
     if (actionType === TOOL_ACTION_TYPES.RESIZING && selectedElement) {
       if (!hasMovedRef.current) {
         hasMovedRef.current = true;
-        setElements(elements); // Push current state onto the history stack before resizing
       }
 
-      const resizedDetails = getResizedElementDetails(
-        clientX,
-        clientY,
-        resizeHandle,
-        selectedElement,
-      );
+      const resizedDetails = getResizedElementDetails(clientX, clientY, resizeHandle, selectedElement);
 
       const updatedElement = {
         ...selectedElement,
         ...resizedDetails,
       };
 
-      if (
-        selectedElement.type !== TOOL_ITEMS.BRUSH &&
-        selectedElement.type !== TOOL_ITEMS.TEXT
-      ) {
+      if (selectedElement.type !== TOOL_ITEMS.BRUSH && selectedElement.type !== TOOL_ITEMS.TEXT) {
         const roughCanvas = rough.canvas(canvasRef.current);
         const tempElement = generateElement(
           selectedElement.id,
@@ -398,7 +464,8 @@ function Board() {
       const index = copy.findIndex((el) => el.id === selectedElement.id);
       if (index !== -1) {
         copy[index] = updatedElement;
-        setElements(copy, true);
+        setElements(copy);
+        emitElementUpdate(updatedElement);
       }
       return;
     }
@@ -406,7 +473,6 @@ function Board() {
     if (actionType === TOOL_ACTION_TYPES.MOVING && selectedElement) {
       if (!hasMovedRef.current) {
         hasMovedRef.current = true;
-        setElements(elements); // Push current state onto the history stack before movement starts
       }
 
       const dx = clientX - selectedElement.startX;
@@ -444,19 +510,20 @@ function Board() {
       const index = copy.findIndex((el) => el.id === selectedElement.id);
       if (index !== -1) {
         copy[index] = updatedElement;
-        setElements(copy, true);
+        setElements(copy);
+        emitElementUpdate(updatedElement);
       }
       return;
     }
 
     if (actionType === TOOL_ACTION_TYPES.ERASING) {
-      const deleteElement = [...elements]
-        .reverse()
-        .find((element) => isPointNearElement(clientX, clientY, element));
+      const deleteElement = [...elements].reverse().find((element) => isPointNearElement(clientX, clientY, element));
 
       if (deleteElement) {
         const newState = elements.filter((el) => el.id !== deleteElement.id);
         setElements(newState);
+        emitElementDelete(deleteElement.id);
+        pushUndo({ type: "delete", element: deleteElement });
       }
       return;
     }
@@ -472,33 +539,44 @@ function Board() {
         points: [...copy[index].points, { x: clientX, y: clientY }],
       };
 
-      setElements(copy, true);
+      setElements(copy);
+      emitElementUpdate(copy[index]);
     } else {
-      const updatedElement = generateElement(
-        id,
-        x1,
-        y1,
-        clientX,
-        clientY,
-        type,
-        options,
-        roughCanvas.generator,
-      );
+      const updatedElement = generateElement(id, x1, y1, clientX, clientY, type, options, roughCanvas.generator);
 
       const copy = [...elements];
       copy[index] = updatedElement;
 
-      setElements(copy, true);
+      setElements(copy);
+      emitElementUpdate(updatedElement);
     }
   };
 
   const handleMouseUp = () => {
     if (actionType === TOOL_ACTION_TYPES.WRITING) return;
-    else {
-      setActionType(TOOL_ACTION_TYPES.NONE);
-      setSelectedElement(null);
-      setResizeHandle(null);
+
+    if (actionType === TOOL_ACTION_TYPES.DRAWING) {
+      // A brand-new brush stroke or shape just finished growing - record
+      // its FINAL state (not the tiny stub from mousedown) as one "add".
+      const finished = elements[elements.length - 1];
+      if (finished) pushUndo({ type: "add", element: finished });
+    } else if (
+      (actionType === TOOL_ACTION_TYPES.RESIZING || actionType === TOOL_ACTION_TYPES.MOVING) &&
+      selectedElement &&
+      hasMovedRef.current
+    ) {
+      // One "update" per whole drag gesture, not per mousemove tick.
+      // `selectedElement` still holds the ORIGINAL element as it was when
+      // the drag started (it's never reassigned during the drag), so it's
+      // exactly the "before" snapshot we need.
+      const { startX, startY, ...before } = selectedElement;
+      const after = elements.find((el) => el.id === selectedElement.id);
+      if (after) pushUndo({ type: "update", before, after });
     }
+
+    setActionType(TOOL_ACTION_TYPES.NONE);
+    setSelectedElement(null);
+    setResizeHandle(null);
   };
 
   const handleOnBlur = (event) => {
@@ -517,9 +595,13 @@ function Board() {
       const textHeight = getFontSize(toolboxState.strokeWidth);
       copy[index].x2 += textWidth;
       copy[index].y2 += textHeight;
-      setElements(copy, true);
+      setElements(copy);
+      emitElementUpdate(copy[index]);
+      pushUndo({ type: "add", element: copy[index] });
     } else {
-      setElements(elements.slice(0, -1), true);
+      const emptyElementId = elements[index].id;
+      setElements(elements.slice(0, -1));
+      emitElementDelete(emptyElementId);
     }
     setActionType(TOOL_ACTION_TYPES.NONE);
   };
@@ -568,17 +650,17 @@ function Board() {
 
       <div className="undo-container">
         <div
-          className={classNames("undoItem", { disabled: !canUndo() })}
-          onClick={() => undo()}
-          disabled={!canUndo}
+          className={classNames("undoItem", { disabled: myUndoStack.length === 0 })}
+          onClick={() => myUndo()}
+          disabled={myUndoStack.length === 0}
           title="Undo"
         >
           <LuUndo />
         </div>
         <div
-          className={classNames("undoItem", { disabled: !canRedo() })}
-          onClick={() => redo()}
-          disabled={!canRedo}
+          className={classNames("undoItem", { disabled: myRedoStack.length === 0 })}
+          onClick={() => myRedo()}
+          disabled={myRedoStack.length === 0}
           title="Redo"
         >
           <LuRedo />
