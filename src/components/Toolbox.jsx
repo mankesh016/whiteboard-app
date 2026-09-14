@@ -8,7 +8,7 @@ import {
 import { StrokeIcon } from "../icons/strokeIcon";
 import { LineStyleIcon } from "../icons/roughnessIcon";
 import { GapIcon } from "../icons/gapIcon";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import ToolboxContext from "../store/toolbox-context";
 import BoardContext from "../store/board-context";
 import classNames from "classnames";
@@ -53,6 +53,11 @@ const TOOLBOX_SECTIONS = {
     { id: "gap-4", icon: <GapIcon gap={7} />, value: 45, title: "Large Gap" },
   ],
 };
+
+// Finds the icon already built for the option matching the current value,
+// so the compact preview can reuse the exact same icons as the full picker
+// instead of maintaining a second set just for the collapsed toggle.
+const findIcon = (items, value) => items.find((item) => item.value === value)?.icon ?? null;
 
 const ColorPickerSection = ({ title, presets, colorValue, onSelect }) => {
   const isCustom = colorValue && !presets.some((p) => p.value === colorValue);
@@ -148,6 +153,10 @@ function Toolbox() {
     changeRoughness,
     changeGap,
   } = useContext(ToolboxContext);
+  // Only matters on narrow screens (see the max-width:768px rules in
+  // index.css) - on wider screens CSS keeps the full panel open regardless
+  // of this state, and hides the toggle entirely.
+  const [expanded, setExpanded] = useState(false);
 
   if (
     activeToolItem === TOOL_ITEMS.ERASER ||
@@ -185,7 +194,74 @@ function Toolbox() {
 
   return (
     <>
-      <div className={"toolbox-container max-h-[70vh] overflow-auto "}>
+      <button
+        className={classNames("toolbox-toggle", { "is-open": expanded })}
+        onClick={() => setExpanded(true)}
+        title="Style options - tap to expand"
+      >
+        <div className="toolbox-preview-item">
+          <span className="toolbox-preview-swatch" style={{ background: toolboxState.stroke }} />
+          <span className="toolbox-preview-label">{strokeTitle}</span>
+        </div>
+
+        {showFill && (
+          <div className="toolbox-preview-item">
+            <span
+              className="toolbox-preview-swatch"
+              style={
+                toolboxState.fill === "transparent"
+                  ? {
+                      background: "repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%)",
+                      backgroundSize: "5px 5px",
+                    }
+                  : { background: toolboxState.fill }
+              }
+            />
+            <span className="toolbox-preview-label">Fill</span>
+          </div>
+        )}
+
+        {showFillStyle && (
+          <div className="toolbox-preview-item">
+            <span className="toolbox-preview-icon">{findIcon(TOOLBOX_SECTIONS.fillStyles, toolboxState.fillStyle)}</span>
+            <span className="toolbox-preview-label">Fill Style</span>
+          </div>
+        )}
+
+        <div className="toolbox-preview-item">
+          <span className="toolbox-preview-icon">{findIcon(TOOLBOX_SECTIONS.strokeWidths, toolboxState.strokeWidth)}</span>
+          <span className="toolbox-preview-label">{strokeWidthTitle}</span>
+        </div>
+
+        {showRoughness && (
+          <div className="toolbox-preview-item">
+            <span className="toolbox-preview-icon">{findIcon(TOOLBOX_SECTIONS.roughnessOptions, toolboxState.roughness)}</span>
+            <span className="toolbox-preview-label">Roughness</span>
+          </div>
+        )}
+
+        {showGap && (
+          <div className="toolbox-preview-item">
+            <span className="toolbox-preview-icon">{findIcon(TOOLBOX_SECTIONS.gapOptions, toolboxState.hachureGap)}</span>
+            <span className="toolbox-preview-label">Gap</span>
+          </div>
+        )}
+
+        {showFill && toolboxState.fill !== "transparent" && (
+          <div className="toolbox-preview-item">
+            <span className="toolbox-preview-value">{toolboxState.fillOpacity ?? 60}%</span>
+            <span className="toolbox-preview-label">Opacity</span>
+          </div>
+        )}
+      </button>
+
+      <div className={classNames("toolbox-container max-h-[70vh] overflow-auto", { "is-open": expanded })}>
+        <button className="toolbox-collapse-btn" onClick={() => setExpanded(false)} title="Collapse">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <path d="M3.2 3.2l7.6 7.6M10.8 3.2l-7.6 7.6" />
+          </svg>
+        </button>
+
         {/* Color Sections */}
 
         {/* Stroke Color */}
