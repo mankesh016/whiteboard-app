@@ -15,11 +15,26 @@ export function useCollabSocket(handlers = {}) {
   const handlersRef = useRef(handlers);
   handlersRef.current = handlers;
 
+  // Remembers the last room/name passed to join(), so a reconnect can
+  // automatically re-join the same room without the UI having to notice
+  // the drop and call join() again itself.
+  const lastJoinRef = useRef(null);
+
   useEffect(() => {
     const socket = io(SOCKET_URL);
     socketRef.current = socket;
 
-    socket.on("connect", () => setIsConnected(true));
+    socket.on("connect", () => {
+      setIsConnected(true);
+      // The backend has no memory of this connection - its disconnect
+      // handler already removed us from the room the moment we dropped,
+      // and socket.io hands out a brand-new socket.id on every reconnect.
+      // From the server's point of view this looks exactly like a
+      // first-time join, so we have to actually re-send it.
+      if (lastJoinRef.current) {
+        socket.emit("join", lastJoinRef.current);
+      }
+    });
     socket.on("disconnect", () => setIsConnected(false));
 
     socket.on("joined", (payload) => handlersRef.current.onJoined?.(payload));
@@ -36,6 +51,7 @@ export function useCollabSocket(handlers = {}) {
   }, []);
 
   const join = (room, name) => {
+    lastJoinRef.current = { room, name };
     socketRef.current?.emit("join", { room, name });
   };
 
