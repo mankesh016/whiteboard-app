@@ -17,7 +17,7 @@ import {
   getCursorForHandle,
   getResizedElementDetails,
 } from "../utils/geometry";
-import { useCollabSocket } from "../hooks/useCollabSocket";
+import CollabContext from "../store/collab-context";
 import { downloadCanvasDrawing } from "../utils/export";
 import { LuRedo, LuUndo } from "react-icons/lu";
 import WelcomeModal from "./WelcomeModal";
@@ -44,19 +44,44 @@ function Board() {
   const [myUndoStack, setMyUndoStack] = useState([]);
   const [myRedoStack, setMyRedoStack] = useState([]);
 
-  const { join, emitElementAdd, emitElementUpdate, emitElementDelete, emitCursor } = useCollabSocket({
-    onJoined: (payload) => setElements(payload.elements),
-    onElementAdd: (element) => setElements((prev) => [...prev, element]),
-    onElementUpdate: (element) => {
+  const { socketRef, isConnected, emitElementAdd, emitElementUpdate, emitElementDelete, emitCursor } =
+    useContext(CollabContext);
+
+  // The socket connection itself now lives in CollabProvider (shared with
+  // CollabUI/PeerCursors), so Board.jsx registers its OWN listeners for the
+  // events it specifically cares about, using the socket handed back via
+  // context. setElements is stable across renders (a plain useState setter)
+  // and every handler here uses the FUNCTIONAL update form, so these can
+  // safely be attached once - no stale-closure risk, unlike a naive version
+  // of this that read `elements` directly.
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket) return;
+
+    const handleJoined = (payload) => setElements(payload.elements);
+    const handleAdd = (element) => setElements((prev) => [...prev, element]);
+    const handleUpdate = (element) => {
       setElements((prev) => {
         const copy = [...prev];
         const index = copy.findIndex((el) => el.id === element.id);
         if (index !== -1) copy[index] = element;
         return copy;
       });
-    },
-    onElementDelete: ({ id }) => setElements((prev) => prev.filter((el) => el.id !== id)),
-  });
+    };
+    const handleDelete = ({ id }) => setElements((prev) => prev.filter((el) => el.id !== id));
+
+    socket.on("joined", handleJoined);
+    socket.on("element:add", handleAdd);
+    socket.on("element:update", handleUpdate);
+    socket.on("element:delete", handleDelete);
+
+    return () => {
+      socket.off("joined", handleJoined);
+      socket.off("element:add", handleAdd);
+      socket.off("element:update", handleUpdate);
+      socket.off("element:delete", handleDelete);
+    };
+  }, [isConnected, socketRef]);
 
   const [selectedElement, setSelectedElement] = useState(null);
   const [selectedElementId, setSelectedElementId] = useState(null);
@@ -641,26 +666,6 @@ function Board() {
           <LuRedo />
         </div>
       </div>
-
-      {/* TEMPORARY test control, this will be replaced with the real Go Live / Join Room UI from the design canvas. */}
-      <button
-        onClick={() => {
-          const room = window.prompt("Room code to join:", "TEST01");
-          const name = window.prompt("Your name:", "You");
-          if (room && name) join(room.toUpperCase(), name);
-        }}
-        style={{
-          position: "fixed",
-          bottom: 16,
-          right: 16,
-          zIndex: 50,
-          padding: "8px 12px",
-          fontSize: 12,
-          cursor: "pointer",
-        }}
-      >
-        🔧 Join Room (temp)
-      </button>
 
       <WelcomeModal />
       <ThemeSelector />

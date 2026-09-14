@@ -2,23 +2,27 @@ import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
+const TOAST_DURATION_MS = 3800;
 
-export function useCollabSocket(handlers = {}) {
+export function useCollabSocket() {
   const socketRef = useRef(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [roomCode, setRoomCode] = useState(null);
+  const [myUser, setMyUser] = useState(null); // { id, name, color }
+  const [peers, setPeers] = useState([]); // everyone else in the room
+  const [cursors, setCursors] = useState({}); // { [userId]: { x, y } }
+  const [toasts, setToasts] = useState([]);
 
-  // Board.jsx passes fresh handler functions on every render (they close
-  // over the current `elements`/`setElements`). We only want to connect
-  // and register socket.io listeners ONCE, on mount - so instead of
-  // re-subscribing every render, we keep the latest handlers in a ref and
-  // have the (stable, mount-once) listeners below always call through it.
-  const handlersRef = useRef(handlers);
-  handlersRef.current = handlers;
-
-  // Remembers the last room/name passed to join(), so a reconnect can
-  // automatically re-join the same room without the UI having to notice
-  // the drop and call join() again itself.
+  // Remembers the last join() call so a reconnect can re-join automatically
+  // (the server forgets us the instant we disconnect - see plan-execute-2.md
+  // step 2.8), and so a fresh join() always starts from a clean slate.
   const lastJoinRef = useRef(null);
+
+  const addToast = (text, color, initial) => {
+    const id = Math.random().toString(36).slice(2);
+    setToasts((t) => [...t, { id, text, color, initial }]);
+    setTimeout(() => setToasts((t) => t.filter((toast) => toast.id !== id)), TOAST_DURATION_MS);
+  };
 
   useEffect(() => {
     const socket = io(SOCKET_URL);
@@ -26,24 +30,35 @@ export function useCollabSocket(handlers = {}) {
 
     socket.on("connect", () => {
       setIsConnected(true);
-      // The backend has no memory of this connection - its disconnect
-      // handler already removed us from the room the moment we dropped,
-      // and socket.io hands out a brand-new socket.id on every reconnect.
-      // From the server's point of view this looks exactly like a
-      // first-time join, so we have to actually re-send it.
       if (lastJoinRef.current) {
         socket.emit("join", lastJoinRef.current);
       }
     });
     socket.on("disconnect", () => setIsConnected(false));
 
-    socket.on("joined", (payload) => handlersRef.current.onJoined?.(payload));
-    socket.on("element:add", (element) => handlersRef.current.onElementAdd?.(element));
-    socket.on("element:update", (element) => handlersRef.current.onElementUpdate?.(element));
-    socket.on("element:delete", (payload) => handlersRef.current.onElementDelete?.(payload));
-    socket.on("presence:join", (payload) => handlersRef.current.onPresenceJoin?.(payload));
-    socket.on("presence:leave", (payload) => handlersRef.current.onPresenceLeave?.(payload));
-    socket.on("cursor", (payload) => handlersRef.current.onCursor?.(payload));
+    socket.on("joined", ({ userId, color, peers: initialPeers }) => {
+      setMyUser({ id: userId, color, name: lastJoinRef.current?.name });
+      setPeers(initialPeers);
+      setRoomCode(lastJoinRef.current?.room ?? null);
+    });
+
+    socket.on("presence:join", ({ user }) => {
+      setPeers((p) => [...p, user]);
+      addToast(`${user.name} joined the room`, user.color, user.name[0]?.toUpperCase());
+    });
+
+    socket.on("presence:leave", ({ user }) => {
+      setPeers((p) => p.filter((u) => u.id !== user.id));
+      setCursors((c) => {
+        const copy = { ...c };
+        delete copy[user.id];
+        return copy;
+      });
+    });
+
+    socket.on("cursor", ({ userId, x, y }) => {
+      setCursors((c) => ({ ...c, [userId]: { x, y } }));
+    });
 
     return () => {
       socket.disconnect();
@@ -53,6 +68,20 @@ export function useCollabSocket(handlers = {}) {
   const join = (room, name) => {
     lastJoinRef.current = { room, name };
     socketRef.current?.emit("join", { room, name });
+  };
+
+  // There's no explicit "leave" event on the backend (it only reacts to a
+  // real disconnect) - so leaving is done by dropping this connection and
+  // opening a fresh one, with lastJoinRef cleared first so the "connect"
+  // handler above doesn't immediately auto-rejoin the room we just left.
+  const leave = () => {
+    lastJoinRef.current = null;
+    setRoomCode(null);
+    setMyUser(null);
+    setPeers([]);
+    setCursors({});
+    socketRef.current?.disconnect();
+    socketRef.current?.connect();
   };
 
   const emitElementAdd = (element) => {
@@ -71,7 +100,13 @@ export function useCollabSocket(handlers = {}) {
   return {
     socketRef,
     isConnected,
+    roomCode,
+    myUser,
+    peers,
+    cursors,
+    toasts,
     join,
+    leave,
     emitElementAdd,
     emitElementUpdate,
     emitElementDelete,
