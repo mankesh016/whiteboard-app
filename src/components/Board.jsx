@@ -1,10 +1,4 @@
-import {
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import rough from "roughjs";
 import {
   BRUSH_STROKE_MULTIPLYER,
@@ -15,11 +9,7 @@ import {
 } from "../constants";
 import BoardContext from "../store/board-context";
 import ToolboxContext from "../store/toolbox-context";
-import {
-  generateElement,
-  getSvgPathFromStroke,
-  getThemedColor,
-} from "../utils/element";
+import { generateElement, getSvgPathFromStroke, getThemedColor } from "../utils/element";
 import { getStroke } from "perfect-freehand";
 import {
   isPointNearElement,
@@ -28,6 +18,7 @@ import {
   getResizedElementDetails,
 } from "../utils/geometry";
 import { useHistory } from "../hooks/useHistory";
+import { useCollabSocket } from "../hooks/useCollabSocket";
 import { downloadCanvasDrawing } from "../utils/export";
 import { LuRedo, LuUndo } from "react-icons/lu";
 import WelcomeModal from "./WelcomeModal";
@@ -44,12 +35,32 @@ function Board() {
   const textareaRef = useRef();
   const [actionType, setActionType] = useState(TOOL_ACTION_TYPES.NONE);
   const [elements, setElements, undo, redo, canUndo, canRedo] = useHistory([]);
+
+  // Applying a REMOTE change uses overwrite=true - it updates the current
+  // board snapshot without pushing a new entry onto THIS user's local undo
+  // stack. Otherwise hitting Ctrl+Z after a peer draws something would
+  // confusingly undo their shape instead of your own last action. (Proper
+  // per-user undo is a later step - this is the simple, safe default until then.)
+  const { join, emitElementAdd, emitElementUpdate, emitElementDelete } = useCollabSocket({
+    onJoined: (payload) => setElements(payload.elements, true),
+    onElementAdd: (element) => setElements([...elements, element], true),
+    onElementUpdate: (element) => {
+      const copy = [...elements];
+      const index = copy.findIndex((el) => el.id === element.id);
+      if (index !== -1) copy[index] = element;
+      setElements(copy, true);
+    },
+    onElementDelete: ({ id }) =>
+      setElements(
+        elements.filter((el) => el.id !== id),
+        true,
+      ),
+  });
+
   const [selectedElement, setSelectedElement] = useState(null);
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [resizeHandle, setResizeHandle] = useState(null);
-  const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem("whiteboard-dark-mode") === "true",
-  );
+  const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem("whiteboard-dark-mode") === "true");
   const hasMovedRef = useRef(false);
 
   useEffect(() => {
@@ -163,12 +174,7 @@ function Board() {
         context.strokeStyle = "#1971c2";
         context.lineWidth = 1.5;
         context.setLineDash([4, 4]);
-        context.strokeRect(
-          minX - 4,
-          minY - 4,
-          maxX - minX + 8,
-          maxY - minY + 8,
-        );
+        context.strokeRect(minX - 4, minY - 4, maxX - minX + 8, maxY - minY + 8);
         context.setLineDash([]);
 
         context.fillStyle = "#ffffff";
@@ -224,9 +230,7 @@ function Board() {
 
       const element = [...elements]
         .reverse()
-        .find((el) =>
-          isPointNearElement(clientX, clientY, el, ELEMENT_SELECT_THRESHOLD),
-        );
+        .find((el) => isPointNearElement(clientX, clientY, el, ELEMENT_SELECT_THRESHOLD));
       if (element) {
         setSelectedElementId(element.id);
         setSelectedElement({
@@ -246,13 +250,12 @@ function Board() {
 
     if (activeToolItem === TOOL_ITEMS.ERASER) {
       setActionType(TOOL_ACTION_TYPES.ERASING);
-      const deleteElement = [...elements]
-        .reverse()
-        .find((element) => isPointNearElement(clientX, clientY, element));
+      const deleteElement = [...elements].reverse().find((element) => isPointNearElement(clientX, clientY, element));
 
       if (deleteElement) {
         const newState = elements.filter((el) => el.id !== deleteElement.id);
         setElements(newState);
+        emitElementDelete(deleteElement.id);
       }
       return;
     }
@@ -283,6 +286,7 @@ function Board() {
         options,
       };
       setElements([...elements, newElement]);
+      emitElementAdd(newElement);
       return;
     }
     setActionType(TOOL_ACTION_TYPES.DRAWING);
@@ -295,6 +299,7 @@ function Board() {
         options,
       };
       setElements([...elements, newElement]);
+      emitElementAdd(newElement);
     } else {
       const newElement = generateElement(
         Date.now(),
@@ -307,16 +312,14 @@ function Board() {
         roughCanvas.generator,
       );
       setElements([...elements, newElement]);
+      emitElementAdd(newElement);
     }
   };
 
   const handleMouseMove = (event) => {
     const { clientX, clientY } = event;
 
-    if (
-      activeToolItem === TOOL_ITEMS.SELECTION &&
-      actionType === TOOL_ACTION_TYPES.NONE
-    ) {
+    if (activeToolItem === TOOL_ITEMS.SELECTION && actionType === TOOL_ACTION_TYPES.NONE) {
       let cursor = "default";
       let hoverElement = null;
 
@@ -327,14 +330,7 @@ function Board() {
           if (handle) {
             cursor = getCursorForHandle(handle);
             hoverElement = selEl;
-          } else if (
-            isPointNearElement(
-              clientX,
-              clientY,
-              selEl,
-              ELEMENT_SELECT_THRESHOLD,
-            )
-          ) {
+          } else if (isPointNearElement(clientX, clientY, selEl, ELEMENT_SELECT_THRESHOLD)) {
             cursor = "move";
             hoverElement = selEl;
           }
@@ -344,9 +340,7 @@ function Board() {
       if (!hoverElement) {
         const element = [...elements]
           .reverse()
-          .find((el) =>
-            isPointNearElement(clientX, clientY, el, ELEMENT_SELECT_THRESHOLD),
-          );
+          .find((el) => isPointNearElement(clientX, clientY, el, ELEMENT_SELECT_THRESHOLD));
         if (element) {
           cursor = "grab";
         }
@@ -364,22 +358,14 @@ function Board() {
         setElements(elements); // Push current state onto the history stack before resizing
       }
 
-      const resizedDetails = getResizedElementDetails(
-        clientX,
-        clientY,
-        resizeHandle,
-        selectedElement,
-      );
+      const resizedDetails = getResizedElementDetails(clientX, clientY, resizeHandle, selectedElement);
 
       const updatedElement = {
         ...selectedElement,
         ...resizedDetails,
       };
 
-      if (
-        selectedElement.type !== TOOL_ITEMS.BRUSH &&
-        selectedElement.type !== TOOL_ITEMS.TEXT
-      ) {
+      if (selectedElement.type !== TOOL_ITEMS.BRUSH && selectedElement.type !== TOOL_ITEMS.TEXT) {
         const roughCanvas = rough.canvas(canvasRef.current);
         const tempElement = generateElement(
           selectedElement.id,
@@ -399,6 +385,7 @@ function Board() {
       if (index !== -1) {
         copy[index] = updatedElement;
         setElements(copy, true);
+        emitElementUpdate(updatedElement);
       }
       return;
     }
@@ -445,18 +432,18 @@ function Board() {
       if (index !== -1) {
         copy[index] = updatedElement;
         setElements(copy, true);
+        emitElementUpdate(updatedElement);
       }
       return;
     }
 
     if (actionType === TOOL_ACTION_TYPES.ERASING) {
-      const deleteElement = [...elements]
-        .reverse()
-        .find((element) => isPointNearElement(clientX, clientY, element));
+      const deleteElement = [...elements].reverse().find((element) => isPointNearElement(clientX, clientY, element));
 
       if (deleteElement) {
         const newState = elements.filter((el) => el.id !== deleteElement.id);
         setElements(newState);
+        emitElementDelete(deleteElement.id);
       }
       return;
     }
@@ -473,22 +460,15 @@ function Board() {
       };
 
       setElements(copy, true);
+      emitElementUpdate(copy[index]);
     } else {
-      const updatedElement = generateElement(
-        id,
-        x1,
-        y1,
-        clientX,
-        clientY,
-        type,
-        options,
-        roughCanvas.generator,
-      );
+      const updatedElement = generateElement(id, x1, y1, clientX, clientY, type, options, roughCanvas.generator);
 
       const copy = [...elements];
       copy[index] = updatedElement;
 
       setElements(copy, true);
+      emitElementUpdate(updatedElement);
     }
   };
 
@@ -518,8 +498,11 @@ function Board() {
       copy[index].x2 += textWidth;
       copy[index].y2 += textHeight;
       setElements(copy, true);
+      emitElementUpdate(copy[index]);
     } else {
+      const emptyElementId = elements[index].id;
       setElements(elements.slice(0, -1), true);
+      emitElementDelete(emptyElementId);
     }
     setActionType(TOOL_ACTION_TYPES.NONE);
   };
@@ -584,6 +567,26 @@ function Board() {
           <LuRedo />
         </div>
       </div>
+
+      {/* TEMPORARY test control, this will be replaced with the real Go Live / Join Room UI from the design canvas. */}
+      <button
+        onClick={() => {
+          const room = window.prompt("Room code to join:", "TEST01");
+          const name = window.prompt("Your name:", "You");
+          if (room && name) join(room.toUpperCase(), name);
+        }}
+        style={{
+          position: "fixed",
+          bottom: 16,
+          right: 16,
+          zIndex: 50,
+          padding: "8px 12px",
+          fontSize: 12,
+          cursor: "pointer",
+        }}
+      >
+        🔧 Join Room (temp)
+      </button>
 
       <WelcomeModal />
       <ThemeSelector />
