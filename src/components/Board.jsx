@@ -280,7 +280,7 @@ function Board() {
     }
   }, [elements, selectedElementId, isDarkMode]);
 
-  const handleMouseDown = (event) => {
+  const handlePointerDown = (event) => {
     const { clientX, clientY } = event;
 
     if (activeToolItem === TOOL_ITEMS.SELECTION) {
@@ -391,7 +391,7 @@ function Board() {
     }
   };
 
-  const handleMouseMove = (event) => {
+  const handlePointerMove = (event) => {
     const { clientX, clientY } = event;
 
     const now = Date.now();
@@ -552,7 +552,7 @@ function Board() {
     }
   };
 
-  const handleMouseUp = () => {
+  const handlePointerUp = () => {
     if (actionType === TOOL_ACTION_TYPES.WRITING) return;
 
     if (actionType === TOOL_ACTION_TYPES.DRAWING) {
@@ -642,10 +642,11 @@ function Board() {
 
       <canvas
         ref={canvasRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        style={{ cursor: getCursor() }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        style={{ cursor: getCursor(), touchAction: "none" }}
       ></canvas>
 
       <div className="undo-container">

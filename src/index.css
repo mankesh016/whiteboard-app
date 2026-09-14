@@ -93,6 +93,21 @@ body {
   outline: 1.5px solid var(--text-color);
 }
 
+/* On narrower screens the top-center horizontal bar starts fighting the
+   collaboration cluster/dark-mode toggle for the same strip of space, and
+   there isn't enough width left for 8+ icons in a row - so it becomes a
+   vertical bar on the right-middle instead, mirroring how .toolbox-container
+   already sits at left-middle. */
+@media (max-width: 768px) {
+  .toolbar-container {
+    left: auto;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+  }
+}
+
 /* Toolbox container */
 .toolbox-container {
   @apply absolute top-1/2 -translate-y-1/2 left-5 flex-col justify-center px-3 py-2 w-fit h-fit;
@@ -103,6 +118,122 @@ body {
   transition:
     background-color 0.3s ease,
     border-color 0.3s ease;
+}
+
+/* Compact one-line handle shown instead of the full toolbox on narrow
+   screens - tapping it expands the same panel back to its normal size.
+   Hidden entirely on wider screens, where the full panel just stays open. */
+.toolbox-toggle {
+  display: none;
+}
+.toolbox-collapse-btn {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .toolbox-container {
+    display: none;
+    max-width: calc(100vw - 32px);
+  }
+  .toolbox-container.is-open {
+    display: flex;
+  }
+  /* Swatch/option rows were a single unbroken flex row (fine with room to
+     spare on desktop) - on a narrow screen that row is wider than the
+     viewport and runs off the edge instead of shrinking. Letting it wrap
+     keeps every option reachable instead of clipped off-screen. */
+  .item-container {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .toolbox-toggle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    transform: translateY(-50%);
+    padding: 12px 8px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.06);
+    color: var(--text-color);
+    cursor: pointer;
+    z-index: 30;
+  }
+
+  /* Each row previews the CURRENT value (a color swatch, or a small
+     number for width/opacity) rather than every choice, since there
+     isn't room for the full picker grid in a narrow strip. Tapping any
+     of it expands to the real panel with all the options. */
+  .toolbox-preview-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .toolbox-preview-swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+  }
+  /* Reuses the same 24px icon components the full picker uses (StrokeIcon,
+     LineStyleIcon, the fill-style/gap rough icons) - just shrunk to fit
+     this narrow strip, rather than keeping a separate icon set in sync. */
+  .toolbox-preview-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    color: var(--text-color);
+  }
+  .toolbox-preview-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .toolbox-preview-value {
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .toolbox-preview-label {
+    max-width: 46px;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1.15;
+    text-align: center;
+    opacity: 0.55;
+  }
+  .toolbox-toggle.is-open {
+    display: none;
+  }
+
+  .toolbox-collapse-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-end;
+    width: 24px;
+    height: 24px;
+    margin: -4px -4px 6px auto;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    opacity: 0.6;
+    cursor: pointer;
+  }
+  .toolbox-collapse-btn:hover {
+    opacity: 1;
+  }
 }
 .heading {
   @apply font-semibold text-sm;
