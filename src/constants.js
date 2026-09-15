@@ -96,15 +96,15 @@ export const WELCOME_MODAL = {
     },
     {
       EMOJI: "🎯",
-      TITLE: "Select & Move",
+      TITLE: "Select, Move & Resize",
       DESCRIPTION:
-        "Switch to the Selection tool to drag elements around (click borders for transparent shapes).",
+        "Switch to the Selection tool to drag elements around, or resize via corners, edges, and endpoints — text font size scales automatically.",
     },
     {
-      EMOJI: "📐",
-      TITLE: "Dynamic Resizing",
+      EMOJI: "🤝",
+      TITLE: "Live Collaboration",
       DESCRIPTION:
-        "Drag shape corners, edges, or endpoints. Text font size scales automatically when resized!",
+        "Go live or join a room to draw together in real time — everyone's cursors and changes sync instantly.",
     },
   ],
 };
